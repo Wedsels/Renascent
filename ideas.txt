@@ -3,7 +3,13 @@ What does a Mimic like to eat?
 
 
 What does a Mimic like to say when eating or uneating?
-
+Eat:
+- GROM
+- GuALP
+Uneat:
+- Pleh
+- Platooie
+- EUgCGH
 
 What are the Unique Effects?
 
