@@ -284,7 +284,10 @@ internal class Chest : UI {
 			0f
 		);
 
-		Lighting.AddLight( ( Dim.Center() + Main.screenPosition ), new Vector3( 2f / Math.Max( Dim.Center().Distance( Main.LocalPlayer.Center - Main.screenPosition ), 100f ) * 100f ) );
+		if ( dragging ) {
+			Vector2 Zoom = Dim.Center() / Main.GameZoomTarget + Main.Camera.ScaledPosition;
+			Lighting.AddLight( Zoom, new Vector3( 2f / Math.Max( Zoom.Distance( Main.LocalPlayer.Center ), 100f ) * 100f ) );
+		}
 
 		Mimic.DrawSpeak();
     }
