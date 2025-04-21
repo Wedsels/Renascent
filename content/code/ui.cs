@@ -52,7 +52,7 @@ internal class UICommon : ModSystem {
 			cursor.EmitDelegate( () => {
 				UI.Mouse = Main.MouseScreen;
 				Main.spriteBatch.End();
-				Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.SamplerStateForCursor, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.UIScaleMatrix);
+				Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.UIScaleMatrix);
 				foreach ( var i in UI.Display.Values )
 					if ( i.Show )
 						i.Draw();

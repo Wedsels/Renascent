@@ -179,12 +179,12 @@ internal class Chest : UI {
 
 		bool lift = DragMouse.Y < 0;
 		if ( dragging )
-			_frame = _frame % 2.0 + 6.0;
+			_frame = 6.0;
 		else if ( lift )
 			_frame = 7.0;
 		else momentum = Vector2.Zero;
 		
-		if ( !dragging && !lift && Within || Condition ) {
+		if ( Main.playerInventory && !dragging && !lift && Within || ( Condition &= Main.playerInventory && !lift && !dragging ) ) {
 			Terraria.ModLoader.UI.UICommon.TooltipMouseText( "Murmer the Mimic" );
 
 			if ( LClick )
@@ -210,8 +210,6 @@ internal class Chest : UI {
 			_frame %= 3.0;
 		} else if ( Frame < 3.0 )
 			_frame += 3.0;
-
-		Condition &= Main.playerInventory && !lift && !dragging;
 
 		if ( momentum.Y <= 0 && TrashSlot.Top < Dim.Top && !Main.LocalPlayer.trashItem.IsAir )
 			if ( Dim.Intersects( TrashSlot ) )
