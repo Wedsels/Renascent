@@ -1,113 +1,145 @@
 using System;
 using System.Linq;
 using Terraria;
-using Terraria.UI;
 using Terraria.ModLoader;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.Cil;
 
 namespace Renascent.content.code;
 
 internal class UICommon : ModSystem {
-	internal static bool Details;
+    public override void Load() {
+        IL_Main.DoUpdate += context => {
+			var cursor = new ILCursor( context );
+			
+			if ( cursor.TryGotoNext(
+			    i => i.MatchLdsfld( typeof( Main ), nameof( Main.timeForVisualEffects ) ),
+			    i => i.MatchLdcR8( 1.0 ),
+			    i => i.MatchAdd()
+			) ) cursor.EmitDelegate( () => {
+				foreach ( var i in UI.Display.Values ) {
+					if ( i.Show ) {
+						i.Update();
+						i._frame += 1.0 / i.Slow;
 
-	public override void ModifyInterfaceLayers( List< GameInterfaceLayer > layers ) {
-		int index = layers.FindIndex( layer => layer.Name.Equals( "Vanilla: Mouse Text" ) );
-		if ( index > -1 )
-			layers.Insert(
-				index,
-				new LegacyGameInterfaceLayer(
-					"Renascent: UI",
-					delegate {
-						foreach ( var i in UI.Display.Values )
-							if ( i.Show )
-								i.Update();
-							else
-								i.Hide();
+						if ( !i.dragging && !i.Within )
+							continue;
+						
+						Main.LocalPlayer.mouseInterface = true;
 
-						return true;
-					},
-					InterfaceScaleType.None
-				)
-			);
-	}
+						if ( i.Drag && Main.mouseRight ) {
+							i.dragging = true;
+							if ( i.StartDrag == Vector2.Zero )
+								i.StartDrag = UI.Mouse - i.DragMouse;
+							i.DragMouse = UI.Mouse - i.StartDrag;
+						} else {
+							i.StartDrag = Vector2.Zero;
+							i.dragging = false;
+						}
+					} else {
+						i.DragMouse = Vector2.Zero;
+						i._frame = 0.0;
+					}
+				}
+			} );
+		};
+		
+        IL_Main.DrawThickCursor += context => {
+			var cursor = new ILCursor( context );
+
+			cursor.EmitDelegate( () => {
+				UI.Mouse = Main.MouseScreen;
+				Main.spriteBatch.End();
+				Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.SamplerStateForCursor, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.UIScaleMatrix);
+				foreach ( var i in UI.Display.Values )
+					if ( i.Show )
+						i.Draw();
+					else
+						i.Hide();
+			} );
+		};
+    }
 }
 
-internal class UI {
-    internal static Dictionary< Type, UI > Display = [];
+internal abstract class UI {
+    internal static readonly Dictionary< Type, UI > Display;
 	static UI() {
 		Display = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t => t.IsSubclassOf( typeof( UI ) ) && !t.IsAbstract ).ToDictionary( t => t, t => ( UI )Activator.CreateInstance( t )! );
 		Display.Last().Value.Initialize();
 	}
 
-	internal void Update() {
-		if ( Within ) {
-			Main.LocalPlayer.mouseInterface = true;
-
-			if ( Main.mouseRight ) {
-				if ( StartDrag == Point.Zero )
-					StartDrag = Main.MouseScreen.ToPoint() - DragMouse;
-				DragMouse = Main.MouseScreen.ToPoint() - StartDrag;
-			} else StartDrag = Point.Zero;
-		} else StartDrag = Point.Zero;
-
-		FrameCount++;
-		Draw();
-	}
-
-	internal virtual void Initialize() {}
-    internal virtual void Draw() {}
+	protected virtual void Initialize() {}
+	internal virtual void Update() {}
+	internal virtual void Draw() {}
 	internal virtual void Hide() {}
     internal virtual bool Show => false;
 
 	protected static SpriteBatch SB => Main.spriteBatch;
 	internal static Texture2D Texture( string name ) => ModContent.Request< Texture2D >( "Renascent/content/texture/" + name, ReLogic.Content.AssetRequestMode.ImmediateLoad ).Value;
 
+	protected float ScreenWidth => Main.maxScreenW / Main.UIScale - Width;
+	protected float ScreenHeight => Main.maxScreenH / Main.UIScale - Height;
+
 	protected static bool LClick => Main.mouseLeftRelease && Main.mouseLeft;
 	protected static bool RClick => Main.mouseRightRelease && Main.mouseRight;
 	protected static bool MClick => Main.mouseMiddleRelease && Main.mouseMiddle;
 
-	protected virtual int Slow => 15;
+	internal virtual double Slow => 3;
 	protected virtual int Frames => 1;
-	protected int Frame => FrameCount / Slow % Frames;
-	internal int FrameCount = 0;
+	internal double _frame;
+	protected int Frame => ( int )_frame % Frames;
 
 	internal virtual bool Condition { get; set; }
 
-	protected virtual bool Drag => false;
-	protected Point DragMouse = Point.Zero;
-	protected Point StartDrag = Point.Zero;
+	internal virtual bool Drag => false;
+	internal Vector2 DragMouse = Vector2.Zero;
+	internal Vector2 StartDrag = Vector2.Zero;
+	internal bool dragging;
+	
+	internal static Vector2 Mouse;
 
-	internal virtual int Width => 0;
-	internal virtual int Height => 0;
-	internal virtual int Left => 0;
-	internal virtual int Top => 0;
-	protected Rectangle Dim => new( Left + DragMouse.X, Top + DragMouse.Y, Width, Height );
-	protected bool Within => Dim.Contains( Main.MouseScreen.ToPoint() );
+	internal virtual float Width => 0;
+	internal virtual float Height => 0;
+	protected virtual float Left => 0;
+	protected virtual float Top => 0;
+	internal Rectangle Dim => new( ( int )( Left + DragMouse.X ), ( int )( Top + DragMouse.Y ), ( int )Width, ( int )Height );
+	internal bool Within => Dim.Contains( Mouse.ToPoint() );
 
-	protected static float Scale => Main.UIScale;
+	internal static Rectangle TrashSlot { get {
+		int num = 448;
+		int num2 = 258;
+		if ( ( Main.LocalPlayer.chest != -1 || Main.npcShop > 0 ) && !Main.recBigList ) {
+			num2 += 168;
+			num += 5;
+		} else if ( ( Main.LocalPlayer.chest == -1 || Main.npcShop == -1 ) && Main.trashSlotOffset != Terraria.DataStructures.Point16.Zero ) {
+			num += Main.trashSlotOffset.X;
+			num2 += Main.trashSlotOffset.Y;
+		}
+
+		return new Rectangle( num, num2, ( int )( Terraria.GameContent.TextureAssets.InventoryBack.Width() * Main.inventoryScale ), ( int )( Terraria.GameContent.TextureAssets.InventoryBack.Height() * Main.inventoryScale ) );
+	} }
 }
 
 internal class ItemSlot {
-	internal int slot;
-	internal ref Item Item => ref System.Runtime.InteropServices.CollectionsMarshal.AsSpan( Items )[ slot ];
+	private readonly int slot;
+	private ref Item Item => ref System.Runtime.InteropServices.CollectionsMarshal.AsSpan( Items )[ slot ];
 
-	internal static List< Item > Items = [];
+	private static readonly List< Item > Items = [];
 	public ItemSlot() {
 		slot = Items.Count;
 		Items.Add( new() );
 	}
 
-	internal const int Size = 45;
-	internal float scale = 1f;
+	private const int Size = 45;
+	private const float scale = 1f;
 	internal int Left, Top;
-	internal bool Show = false;
 
 	internal Func< bool > Check;
 
-	internal Rectangle Dim => new( Left, Top, Size, Size );
-	internal bool Within => Dim.Contains( Main.MouseScreen.ToPoint() );
+	private Rectangle Dim => new( Left, Top, Size, Size );
+	private bool Within => Dim.Contains( UI.Mouse.ToPoint() );
 
     internal void Draw() {
 		Utils.DrawInvBG( Main.spriteBatch, Dim );
@@ -157,7 +189,7 @@ internal class ItemSlot {
 			Grab();
     }
 
-	protected void Grab() {
+    private void Grab() {
 		if ( !Within || Item.IsAir && Main.mouseItem.IsAir || !Check() && !Main.mouseItem.IsAir )
 			return;
 

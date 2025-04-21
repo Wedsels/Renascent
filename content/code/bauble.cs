@@ -1,9 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -13,12 +8,12 @@ using Terraria.ModLoader.IO;
 namespace Renascent.content.code;
 
 internal class Bauble : ModItem {
-    protected static List< Texture2D > Potion = [];
+    private static List< Texture2D > Potion = [];
 
-    internal static List< string > FoodNames = [];
-    protected static List< Texture2D > Food = [];
+    private static readonly List< string > FoodNames = [];
+    private static List< Texture2D > Food = [];
 
-    protected static List< Texture2D > Book = [];
+    private static readonly List< Texture2D > Book = [];
 
     protected static Texture2D Egg = UI.Texture( "Eggs" );
 
@@ -37,7 +32,7 @@ internal class Bauble : ModItem {
             Book.Add( UI.Texture( "book/book" + i ) );
     }
 
-    protected bool Draw( SpriteBatch SpriteBatch, Vector2 Center, float Scale, Color Color ) {
+    private bool Draw( SpriteBatch SpriteBatch, Vector2 Center, float Scale, Color Color ) {
         SpriteBatch.Draw(
             Sprite,
 			Center - new Vector2( Sprite.Width * Scale / 2, Sprite.Height * Scale / 2 ),
@@ -53,7 +48,7 @@ internal class Bauble : ModItem {
         return false;
     }
 
-    internal Texture2D Sprite => Book[ 20 ];
+    private Texture2D Sprite => Book[ 20 ];
 
     public override void LoadData( TagCompound tag ) {
         Item.width = Sprite.Width;
