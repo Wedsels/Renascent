@@ -43,9 +43,6 @@ internal class MimicUI : UI {
 	internal override void Update() {
 		if ( Main.timeForVisualEffects % 6000 == 0 )
 			movetype = Main.rand.Next( 3 );
-			
-		if ( dragging )
-			dragged = true;
 	
 		if ( !greeting ) {
 			DragMouse.X += Main.rand.NextFloat( ScreenWidth );
@@ -62,6 +59,11 @@ internal class MimicUI : UI {
 		death = Main.LocalPlayer.dead;
 
 		bool lift = DragMouse.Y < 0;
+			
+		if ( dragging && lift ) {
+			movetype = Main.rand.Next();
+			dragged = true;
+		}
 		
 		if ( Frame == Frames / 2.0 + 1.0 )
 			canhop = true;
@@ -109,8 +111,7 @@ internal class MimicUI : UI {
 			_frame = 0.0;
 		else if ( Frame < Frames / 2.0 )
 			_frame += Frames / 2.0;
-
-		if ( dragging ) {
+		else if ( dragging ) {
 			_frame = Frames - 2.0;
 			momentum = Vector2.Zero;
 		} else if ( lift && !hop && !canhop && dragged )
@@ -121,6 +122,7 @@ internal class MimicUI : UI {
 				Mimic.Digest();
 			else {
 				dragged = true;
+				movetype = Main.rand.Next();
 				Vector2 d = Dim.Center();
 				Vector2 t = TrashSlot.Center();
 				momentum = d.DirectionTo( t ) * Math.Max( 15f, d.Distance( t ) / 8f );
@@ -145,6 +147,7 @@ internal class MimicUI : UI {
 		lastmomentum = Mouse;
 		
 		if ( ( DragMouse += momentum ).Y > 0 ) DragMouse.Y = 0;
+
 		if ( dragging && momentum.Y == 0 )
 			momentum.Y = 1f;
 
@@ -175,10 +178,13 @@ internal class MimicUI : UI {
 					);
 			} else
 				Terraria.Audio.SoundEngine.PlaySound( SoundID.Tink );
-				
+
+			canhop = true;
+		}
+
+		if ( Dim.Top >= ScreenHeight ) {
 			momentum.Y = 0f;
 			dragged = false;
-			canhop = true;
 		}
 
 		if ( momentum.X > 0 )
