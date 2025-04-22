@@ -1,5 +1,7 @@
 using MonoMod.Cil;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -7,14 +9,10 @@ using Terraria.ModLoader.IO;
 namespace Renascent.content.code;
 
 internal class TrashPlayer  : ModPlayer {
-    internal static int ChestUpgrade;
-    internal const int ChestUpgrades = 5;
+	internal readonly List< Item > Trash = [];
 
-	internal static readonly Dictionary< string, Item > Items = [];
-    
-    // internal static TrashPlayer TP => Main.LocalPlayer.GetModPlayer< TrashPlayer >();
-
-	internal static readonly List< Item > Trash = [];
+	internal readonly Dictionary< string, Item > Items = [];
+	internal int MimicUpgrade;
 
     public override void Load() {
         IL_Main.OnCharacterNamed += context => new ILCursor( context ).EmitDelegate( () => { 
@@ -30,14 +28,20 @@ internal class TrashPlayer  : ModPlayer {
 		} );
 		
 		Terraria.UI.ItemSlot.OnItemTransferred += info => {
-			if ( info.ToContext != 6 ) return;
-			Trash.Add( Main.LocalPlayer.trashItem.Clone() );
+			if ( info.ToContext != 6 || !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) ) return;
+			tp.Trash.Add( Main.LocalPlayer.trashItem.Clone() );
 		};
     }
 
     public override void PostUpdate() {
         if ( Trash.Count > 0 && Trash[ ^1 ].IsAir )
-			Trash[ ^1 ] = Main.LocalPlayer.trashItem.Clone();
+			Trash[ ^1 ] = Player.trashItem.Clone();
+		
+		if ( Renascent.LastUpgrade != MimicUpgrade ) {
+			var stream = File.CreateText( Renascent.FileText );
+			stream.Write( Renascent.LastUpgrade = MimicUpgrade );
+			stream.Close();
+		}
     }
 
     public override bool OnPickup( Item item ) {
@@ -47,12 +51,16 @@ internal class TrashPlayer  : ModPlayer {
     }
 
     public override void LoadData( TagCompound tag ) {
-	    foreach ( var i in Items )
-			Items[ i.Key ] = tag.Get< Item >( i.Key );
+	    foreach ( var i in ItemSlot.Items )
+			Items[ i ] = tag.Get< Item >( i );
+
+		MimicUpgrade = tag.Get< int >( "mimicupgrade" );
     }
     
     public override void SaveData( TagCompound tag ) {
-	    foreach ( var i in Items )
-			tag[ i.Key ] = i.Value;
+	    foreach ( var i in Items.Keys )
+			tag[ i ] = Items[ i ];
+			
+		tag[ "mimicupgrade" ] = MimicUpgrade;
     }
 }

@@ -34,15 +34,18 @@ internal class MimicUI : UI {
 	private Vector2 lastmomentum = Vector2.Zero;
 	private SpriteEffects direction = SpriteEffects.None;
 
-	private bool greeting, farewell, death, open, close;
+	private bool greeting, farewell, death, open, close, canhop = true, hop, dragged;
     
     private int movetype = Main.rand.Next( 3 );
 	
-	internal override double Slow => Frame < Frames / 2.0 ? 2.0 : 16.0 - Frame;
+	internal override double Slow => Frame < Frames / 2.0 ? 2.0 : Frame >= Frames - 1 ? 18.0 : 10.0;
 
 	internal override void Update() {
 		if ( Main.timeForVisualEffects % 6000 == 0 )
 			movetype = Main.rand.Next( 3 );
+			
+		if ( dragging )
+			dragged = true;
 	
 		if ( !greeting ) {
 			DragMouse.X += Main.rand.NextFloat( ScreenWidth );
@@ -60,8 +63,26 @@ internal class MimicUI : UI {
 
 		bool lift = DragMouse.Y < 0;
 		
+		if ( Frame == Frames / 2.0 + 1.0 )
+			canhop = true;
+		
+		canhop &= !dragging && !Within && movetype < 2;
+
+		if ( !dragged && Show && ( canhop || hop ) && Frame >= Frames - 3 ) {
+			canhop = false;
+			hop = true;
+
+			if ( Frame > Frames - 2 )
+				momentum.Y -= 0.85f;
+			
+			if ( Frame > Frames - 2 )
+				momentum.X -= movetype == 0 ? 1.1f : -1.1f;
+		} else hop = false;
+		
 		if ( Main.playerInventory && !dragging && !lift && Within || ( Condition &= Main.playerInventory && !lift && !dragging ) ) {
 			Terraria.ModLoader.UI.UICommon.TooltipMouseText( "Murmer the Mimic" );
+			
+			momentum.X = 0f;
 
 			if ( LClick && Within )
 				if ( Condition = !Condition ) {
@@ -89,25 +110,31 @@ internal class MimicUI : UI {
 		else if ( Frame < Frames / 2.0 )
 			_frame += Frames / 2.0;
 
-		if ( dragging )
+		if ( dragging ) {
 			_frame = Frames - 2.0;
-		else if ( lift )
+			momentum = Vector2.Zero;
+		} else if ( lift && !hop && !canhop && dragged )
 			_frame = Frames - 1.0;
-		else momentum = Vector2.Zero;
 
 		if ( momentum.Y <= 0 && TrashSlot.Top < Dim.Top && !Main.LocalPlayer.trashItem.IsAir )
 			if ( Dim.Intersects( TrashSlot ) )
 				Mimic.Digest();
 			else {
+				dragged = true;
 				Vector2 d = Dim.Center();
 				Vector2 t = TrashSlot.Center();
 				momentum = d.DirectionTo( t ) * Math.Max( 15f, d.Distance( t ) / 8f );
 			}
-		else if ( !dragging && lift ) {
-			momentum.X /= 1.08f;
-			if ( momentum.Y < -2f )
-				momentum.Y /= 1.15f;
-			else momentum.Y = Math.Max( momentum.Y, 3f ) * 1.15f;
+			
+		momentum.X /= 1.04f;
+		if ( Math.Abs( momentum.X ) < 0.5f )
+			momentum.X = 0f;
+
+		if ( momentum.Y != 0f ) {
+			momentum.Y /= 1.12f;
+			momentum.Y += 0.5f;
+			if ( momentum.Y > 0f )
+				momentum.Y *= 1.33f;
 		}
 	
 		if ( DragMouse.Y < 0 && dragging && !Main.mouseRight ) {
@@ -116,19 +143,18 @@ internal class MimicUI : UI {
 				Terraria.Audio.SoundEngine.PlaySound( Main.rand.Next( 3 ) switch { 0 => SoundID.Zombie126, 1 => SoundID.Zombie127, _ => SoundID.Zombie128 } );
 		}
 		lastmomentum = Mouse;
-
-		if ( !lift && !dragging && Frame == Frames - 1 && movetype < 2 )
-			momentum.X = movetype == 0 ? 8f : -8f;
 		
 		if ( ( DragMouse += momentum ).Y > 0 ) DragMouse.Y = 0;
+		if ( dragging && momentum.Y == 0 )
+			momentum.Y = 1f;
 
 		if ( Dim.Left - Dim.Width > ScreenWidth )
 			DragMouse.X = -Dim.Width;
 		else if ( Dim.Right < 0 )
 			DragMouse.X = ScreenWidth + Dim.Width;
 
-		if ( !dragging)
-			if ( lift && DragMouse.Y == 0 && momentum.Y > 120 ) {
+		if ( !dragging && lift && DragMouse.Y == 0 ) {
+			if ( momentum.Y > 200f ) {
 				movetype = Main.rand.Next( 3 );
 				if ( Main.rand.NextBool( Math.Max( 1, 240 - ( int )momentum.Y ) ) )
 					Mimic.Speak( Main.rand.Next( 6 ) switch {
@@ -147,8 +173,13 @@ internal class MimicUI : UI {
 						Dim.Height,
 						i % 4 == 0 ? DustID.Blood : DustID.WoodFurniture
 					);
-			} else if ( lift && DragMouse.Y == 0 )
+			} else
 				Terraria.Audio.SoundEngine.PlaySound( SoundID.Tink );
+				
+			momentum.Y = 0f;
+			dragged = false;
+			canhop = true;
+		}
 
 		if ( momentum.X > 0 )
 			direction = SpriteEffects.FlipHorizontally;
@@ -164,13 +195,16 @@ internal class MimicUI : UI {
 	}
 
 	internal override void Draw() {
+		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) && !Main.gameMenu )
+			return;
+
 		Vector2 rotation = Vector2.Normalize( DragMouse );
 		SB.Draw(
 			MimicSmall,
 			Dim,
-			new( ( int )( Width * TrashPlayer.ChestUpgrade ), ( int )( Height * Frame ), ( int )Width, ( int )Height ),
+			new( ( int )( Width * ( Main.gameMenu ? Renascent.LastUpgrade : tp.MimicUpgrade ) ), ( int )( Height * Frame ), ( int )Width, ( int )Height ),
 			Color.White,
-			dragging ? 0f : ( float )Math.Atan2( rotation.Y, rotation.X ) * ( direction == SpriteEffects.FlipHorizontally ? 1.0f : -1.0f ),
+			dragging || hop ? 0f : ( float )Math.Atan2( rotation.Y, rotation.X ) * ( direction == SpriteEffects.FlipHorizontally ? 1.0f : -1.0f ),
 			Vector2.Zero,
 			direction,
 			0f
@@ -178,7 +212,7 @@ internal class MimicUI : UI {
 
 		if ( dragging ) {
 			Vector2 Zoom = Dim.Center() / Main.GameZoomTarget + Main.Camera.ScaledPosition;
-			Lighting.AddLight( Zoom, new Vector3( TrashPlayer.ChestUpgrade * 5f / ( float )( Math.Pow( Math.Max( 500.0f, Zoom.Distance( Main.LocalPlayer.Center ) ), 2.0 ) / 20000.0 ) ) );
+			Lighting.AddLight( Zoom, new Vector3( Renascent.LastUpgrade * 5f / ( float )( Math.Pow( Math.Max( 500.0f, Zoom.Distance( Main.LocalPlayer.Center ) ), 2.0 ) / 20000.0 ) ) );
 		}
 
 		Mimic.DrawSpeak();

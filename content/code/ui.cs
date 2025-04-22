@@ -122,9 +122,8 @@ internal abstract class UI {
 
 internal class ItemSlot {
 	private readonly string slot;
-	private ref Item Item => ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault( TrashPlayer.Items, slot, out bool _ );
-
-	public ItemSlot( string name ) => TrashPlayer.Items[ slot = name ] = new();
+	internal static readonly List< string > Items = [];
+	public ItemSlot( string name ) => Items.Add( slot = name );
 
 	private const int Size = 45;
 	private const float scale = 1f;
@@ -142,6 +141,11 @@ internal class ItemSlot {
 
     internal void Draw() {
 		Utils.DrawInvBG( Main.spriteBatch, Dim );
+		
+		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
+			return;
+			
+		ref Item Item = ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault( tp.Items, slot, out bool _ );
 
 		if ( Item.IsAir )
 			return;
@@ -186,6 +190,11 @@ internal class ItemSlot {
     }
 
     private void Grab() {
+		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
+			return;
+			
+		ref Item Item = ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault( tp.Items, slot, out bool _ );
+
 		if ( !Within || Item.IsAir && Main.mouseItem.IsAir || !Check() && !Main.mouseItem.IsAir )
 			return;
 

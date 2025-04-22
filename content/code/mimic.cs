@@ -9,17 +9,22 @@ using Terraria.ID;
 namespace Renascent.content.code;
 
 internal static class Mimic {
+	internal static int Upgrades => 5;
+
 	internal static UI UI => UI.Display[ typeof( MimicUI ) ];
 
 	internal static void Digest() {
-		Main.LocalPlayer.trashItem.TurnToAir();
+		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
+			return;
 	
-		foreach ( var i in TrashPlayer.Trash ) {
-			TrashPlayer.ChestUpgrade = ( TrashPlayer.ChestUpgrade + 1 ) % TrashPlayer.ChestUpgrades;
+		Main.LocalPlayer.trashItem.SetDefaults();
+
+		foreach ( var i in tp.Trash ) {
+			tp.MimicUpgrade = ( tp.MimicUpgrade + 1 ) % Upgrades;
 			Console.WriteLine( ( 1.0 + i.value ) * ( 1.0 + Math.Abs( i.rare ) ) * i.stack + " :experience points - " + i );
 		}
 
-		TrashPlayer.Trash.Clear();
+		tp.Trash.Clear();
 
 		Speak( Main.rand.Next( 5 ) switch {
 			0 => "YUM",
