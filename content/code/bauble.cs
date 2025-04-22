@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -15,7 +15,7 @@ internal class Bauble : ModItem {
 
     private static readonly List< Texture2D > Book = [];
 
-    protected static Texture2D Egg = UI.Texture( "Eggs" );
+    private static readonly Texture2D Egg = UI.Texture( "Eggs" );
 
     public override void Load() {
         for ( int i = 1; i <= 253; i++ )
@@ -33,10 +33,11 @@ internal class Bauble : ModItem {
     }
 
     private bool Draw( SpriteBatch SpriteBatch, Vector2 Center, float Scale, Color Color ) {
+		Scale /= 1.5f;
         SpriteBatch.Draw(
-            Sprite,
-			Center - new Vector2( Sprite.Width * Scale / 2, Sprite.Height * Scale / 2 ),
-			null,
+			Sprite,
+			Center - new Vector2( 64 * Scale / 2f, 64 * Scale / 2f ),
+			new Rectangle( 64, 64 * 2, 64, 64 ),
 			Color,
 			0f,
 			Vector2.Zero,
@@ -48,7 +49,7 @@ internal class Bauble : ModItem {
         return false;
     }
 
-    private Texture2D Sprite => Book[ 20 ];
+    private Texture2D Sprite => Egg;
 
     public override void LoadData( TagCompound tag ) {
         Item.width = Sprite.Width;

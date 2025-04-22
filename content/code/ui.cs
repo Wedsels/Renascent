@@ -1,11 +1,11 @@
-using System;
-using System.Linq;
-using Terraria;
-using Terraria.ModLoader;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.Cil;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Terraria;
+using Terraria.ModLoader;
 
 namespace Renascent.content.code;
 
@@ -20,27 +20,23 @@ internal class UICommon : ModSystem {
 			    i => i.MatchAdd()
 			) ) cursor.EmitDelegate( () => {
 				foreach ( var i in UI.Display.Values ) {
-					if ( i.Show ) {
-						i.Update();
-						i._frame += 1.0 / i.Slow;
+					i._frame += 1.0 / i.Slow;
 
-						if ( !i.dragging && !i.Within )
-							continue;
+					i.Update();
+
+					if ( !i.dragging && !i.Within )
+						continue;
 						
-						Main.LocalPlayer.mouseInterface = true;
+					Main.LocalPlayer.mouseInterface = true;
 
-						if ( i.Drag && Main.mouseRight ) {
-							i.dragging = true;
-							if ( i.StartDrag == Vector2.Zero )
-								i.StartDrag = UI.Mouse - i.DragMouse;
-							i.DragMouse = UI.Mouse - i.StartDrag;
-						} else {
-							i.StartDrag = Vector2.Zero;
-							i.dragging = false;
-						}
+					if ( i.Drag && Main.mouseRight ) {
+						i.dragging = true;
+						if ( i.StartDrag == Vector2.Zero )
+							i.StartDrag = UI.Mouse - i.DragMouse;
+						i.DragMouse = UI.Mouse - i.StartDrag;
 					} else {
-						i.DragMouse = Vector2.Zero;
-						i._frame = 0.0;
+						i.StartDrag = Vector2.Zero;
+						i.dragging = false;
 					}
 				}
 			} );
@@ -67,7 +63,9 @@ internal abstract class UI {
     internal static readonly Dictionary< Type, UI > Display;
 	static UI() {
 		Display = System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t => t.IsSubclassOf( typeof( UI ) ) && !t.IsAbstract ).ToDictionary( t => t, t => ( UI )Activator.CreateInstance( t )! );
-		Display.Last().Value.Initialize();
+		foreach ( var ui in Display.Values ) {
+			ui.Initialize();
+		}
 	}
 
 	protected virtual void Initialize() {}
@@ -123,14 +121,10 @@ internal abstract class UI {
 }
 
 internal class ItemSlot {
-	private readonly int slot;
-	private ref Item Item => ref System.Runtime.InteropServices.CollectionsMarshal.AsSpan( Items )[ slot ];
+	private readonly string slot;
+	private ref Item Item => ref System.Runtime.InteropServices.CollectionsMarshal.GetValueRefOrAddDefault( TrashPlayer.Items, slot, out bool _ );
 
-	private static readonly List< Item > Items = [];
-	public ItemSlot() {
-		slot = Items.Count;
-		Items.Add( new() );
-	}
+	public ItemSlot( string name ) => TrashPlayer.Items[ slot = name ] = new();
 
 	private const int Size = 45;
 	private const float scale = 1f;
@@ -140,53 +134,55 @@ internal class ItemSlot {
 
 	private Rectangle Dim => new( Left, Top, Size, Size );
 	private bool Within => Dim.Contains( UI.Mouse.ToPoint() );
+	
+	internal void Update() {
+		if ( Within && Main.mouseLeft && Main.mouseLeftRelease )
+			Grab();
+	}
 
     internal void Draw() {
 		Utils.DrawInvBG( Main.spriteBatch, Dim );
 
-		if ( Within )
+		if ( Item.IsAir )
+			return;
+
+		if ( Within ) {
 			Main.LocalPlayer.mouseInterface = true;
-
-		if ( !Item.IsAir ) {
-			if ( !Terraria.GameContent.TextureAssets.Item[ Item.type ].IsLoaded )
-				Main.instance.LoadItem( Item.type );
-
-			Terraria.UI.ItemSlot.DrawItemIcon(
-				Item,
-				Terraria.UI.ItemSlot.Context.InventoryItem,
-				Main.spriteBatch,
-				new Vector2( Left + Size / 2, Top + Size / 2 ),
-				scale,
-				Size * 0.65f,
-				Color.White
-			);
-
-			if ( Item.stack > 1 ) {
-				string Content = Item.stack.ToString();
-
-				Vector2 Measure = Terraria.GameContent.FontAssets.ItemStack.Value.MeasureString( Content );
-
-				Utils.DrawBorderStringFourWay(
-					Main.spriteBatch,
-					Terraria.GameContent.FontAssets.ItemStack.Value,
-					Content,
-					Left + Size / 2 - Measure.X / 1.5f / 2,
-					Top + Size / 2 + 2,
-					Color.White,
-					Color.Black,
-					Vector2.Zero,
-					scale / 1.5f
-				);
-			}
-
-			if ( Within ) {
-				Main.hoverItemName = Item.Name;
-				Main.HoverItem = Item.Clone();
-			}
+			Main.hoverItemName = Item.Name;
+			Main.HoverItem = Item.Clone();
 		}
 
-		if ( Within && Main.mouseLeft && Main.mouseLeftRelease )
-			Grab();
+		if ( !Terraria.GameContent.TextureAssets.Item[ Item.type ].IsLoaded )
+			Main.instance.LoadItem( Item.type );
+
+		Terraria.UI.ItemSlot.DrawItemIcon(
+			Item,
+			Terraria.UI.ItemSlot.Context.InventoryItem,
+			Main.spriteBatch,
+			new Vector2( Left + Size / 2, Top + Size / 2 ),
+			scale,
+			Size * 0.65f,
+			Color.White
+		);
+
+		if ( Item.stack <= 1 )
+			return;
+
+		string Content = Item.stack.ToString();
+
+		Vector2 Measure = Terraria.GameContent.FontAssets.ItemStack.Value.MeasureString( Content );
+
+		Utils.DrawBorderStringFourWay(
+			Main.spriteBatch,
+			Terraria.GameContent.FontAssets.ItemStack.Value,
+			Content,
+			Left + Size / 2 - Measure.X / 1.5f / 2,
+			Top + Size / 2 + 2,
+			Color.White,
+			Color.Black,
+			Vector2.Zero,
+			scale / 1.5f
+		);
     }
 
     private void Grab() {
