@@ -2,9 +2,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
 
 namespace Renascent.content.code;
 
@@ -26,75 +28,12 @@ internal static class Mimic {
 
 		tp.Trash.Clear();
 
-		Speak( Main.rand.Next( 5 ) switch {
-			0 => "YUM",
-			1 => "I've tasted better.",
-			2 => "Boring...",
-			3 => "MINE",
-			_ => "...Thanks",
-		} );
+		Speak( "Eat" );
 	}
 
-	internal class SpeakData( string text, Vector2 position ) {
-		internal readonly string Text = text;
-		internal Vector2 Position = position;
-		internal float Rotation = Main.rand.NextFloat( 0.5f ) * ( Main.rand.NextBool() ? -1 : 1 );
-		internal Vector2 Origin = FontAssets.MouseText.Value.MeasureString( text ) / 2;
-		internal int Time = 240;
-	}
-	internal static readonly List< SpeakData > Speaks = [];
-
-	internal static void DrawSpeak() {
-		for ( int i = Speaks.Count - 1; i >= 0; i-- ) {
-			ReLogic.Graphics.DynamicSpriteFontExtensionMethods.DrawString(
-				Main.spriteBatch,
-				FontAssets.MouseText.Value,
-				Speaks[ i ].Text,
-				Speaks[ i ].Position - Vector2.One * 2f,
-				Color.Black,
-				Speaks[ i ].Rotation *= Main.rand.NextBool() ? 1.005f : 0.995f,
-				Speaks[ i ].Origin,
-				1f,
-				SpriteEffects.None,
-				0f
-			);
-
-			ReLogic.Graphics.DynamicSpriteFontExtensionMethods.DrawString(
-				Main.spriteBatch,
-				FontAssets.MouseText.Value,
-				Speaks[ i ].Text,
-				Speaks[ i ].Position,
-				Color.DarkRed,
-				Speaks[ i ].Rotation,
-				Speaks[ i ].Origin,
-				1f,
-				SpriteEffects.None,
-				0f
-			);
-
-			if ( --Speaks[ i ].Time <= 0 )
-				Speaks.RemoveAt( i );
-		}
-	}
-
-	internal static void Speak( string text ) {
-		if ( !UI.Show ) return;
+	internal static void Speak( string key ) {
+		UICommon.Text( Language.SelectRandom( ( x, _ ) => x.Contains( "Mimic." + key ) ).Value, UI.Dim );
 
 		Terraria.Audio.SoundEngine.PlaySound( SoundID.Zombie30 );
-
-		Vector2 position = UI.Dim.Center();
-		position.Y -= UI.Height;
-		position.X += UI.Width * Main.rand.NextFloat( 2f ) * ( Main.rand.NextBool() ? -1 : 1 );
-		float x = FontAssets.MouseText.Value.MeasureString( text ).X / 2;
-		if ( position.X < x )
-			position.X = x;
-		else if ( position.X > Main.maxScreenW / Main.UIScale - x )
-			position.X = Main.maxScreenW / Main.UIScale - x;
-		if ( position.Y < 0f )
-			position.Y = 10f;
-		else if ( position.Y > Main.maxScreenH / Main.UIScale )
-			position.Y = Main.maxScreenH / Main.UIScale - 10f;
-
-		Speaks.Add( new( text, position ) );
 	}
 }

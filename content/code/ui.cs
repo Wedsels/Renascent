@@ -5,41 +5,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ModLoader;
 
 namespace Renascent.content.code;
 
 internal class UICommon : ModSystem {
-    public override void Load() {
+	public override void PostSetupContent() {
         IL_Main.DoUpdate += context => {
 			var cursor = new ILCursor( context );
 			
-			if ( cursor.TryGotoNext(
-			    i => i.MatchLdsfld( typeof( Main ), nameof( Main.timeForVisualEffects ) ),
-			    i => i.MatchLdcR8( 1.0 ),
-			    i => i.MatchAdd()
-			) ) cursor.EmitDelegate( () => {
-				foreach ( var i in UI.Display.Values ) {
-					i._frame += 1.0 / i.Slow;
+			if ( cursor.TryGotoNext( i => i.MatchStsfld( typeof( Main ), nameof( Main.hasFocus ) ) ) )
+				cursor.EmitDelegate( () => {
+					foreach ( var i in UI.Display.Values ) {
+						i._frame += 1.0 / i.Slow;
 
-					i.Update();
+						i.Update();
 
-					if ( !i.dragging && !i.Within )
-						continue;
-						
-					Main.LocalPlayer.mouseInterface = true;
+						if ( !i.dragging && !i.Within )
+							continue;
+							
+						Main.LocalPlayer.mouseInterface = true;
 
-					if ( i.Drag && Main.mouseRight ) {
-						i.dragging = true;
-						if ( i.StartDrag == Vector2.Zero )
-							i.StartDrag = UI.Mouse - i.DragMouse;
-						i.DragMouse = UI.Mouse - i.StartDrag;
-					} else {
-						i.StartDrag = Vector2.Zero;
-						i.dragging = false;
+						if ( i.Drag && Main.mouseRight ) {
+							i.dragging = true;
+							if ( i.StartDrag == Vector2.Zero )
+								i.StartDrag = UI.Mouse - i.DragMouse;
+							i.DragMouse = UI.Mouse - i.StartDrag;
+						} else {
+							i.StartDrag = Vector2.Zero;
+							i.dragging = false;
+						}
 					}
-				}
-			} );
+				} );
 		};
 
         IL_Main.DrawThickCursor += context => {
@@ -47,8 +45,12 @@ internal class UICommon : ModSystem {
 
 			cursor.EmitDelegate( () => {
 				UI.Mouse = Main.MouseScreen;
+
 				Main.spriteBatch.End();
 				Main.spriteBatch.Begin( SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.UIScaleMatrix );
+
+				DrawText();
+
 				foreach ( var i in UI.Display.Values )
 					if ( i.Show )
 						i.Draw();
@@ -57,6 +59,75 @@ internal class UICommon : ModSystem {
 			} );
 		};
     }
+    
+    private class TextData( string text, Vector2 position, Color color, int time ) {
+		internal readonly string Text = text;
+		internal Vector2 Position = position;
+		internal float Rotation = Main.rand.NextFloat( 0.5f ) * ( Main.rand.NextBool() ? -1 : 1 );
+		internal readonly Vector2 Origin = FontAssets.MouseText.Value.MeasureString( text ) / 2;
+		internal int Time = time;
+		internal readonly Color Color = color;
+
+		public override int GetHashCode() => Text.GetHashCode();
+		public override bool Equals( object obj ) => obj is TextData data && data.Text == Text;
+	}
+	private static readonly HashSet< TextData > Texts = [];
+	
+	internal static void Text( string text, Rectangle target, int time = 240, Color color = default ) {
+		time += text.Length * 2;
+
+		Vector2 position = target.Center();
+		position.Y -= target.Height;
+		position.X += target.Width * Main.rand.NextFloat( 2f ) * ( Main.rand.NextBool() ? -1 : 1 );
+		float x = FontAssets.MouseText.Value.MeasureString( text ).X / 2;
+		if ( position.X < x )
+			position.X = x;
+		else if ( position.X > Main.maxScreenW / Main.UIScale - x )
+			position.X = Main.maxScreenW / Main.UIScale - x;
+		if ( position.Y - x < 0f )
+			position.Y = 10f + x / 2f;
+		else if ( position.Y + x > Main.maxScreenH / Main.UIScale )
+			position.Y = Main.maxScreenH / Main.UIScale - 10f - x / 2f;
+			
+		if ( Texts.TryGetValue( new ( text, Vector2.Zero, color, time ), out var data ) ) {
+			data.Time = time;
+			data.Position = position;
+		} else
+			Texts.Add( new( text, position, color == default ? Color.DarkRed : color, time ) );
+	}
+
+	private static void DrawText() {
+		foreach ( var i in Texts.Reverse() ) {
+			ReLogic.Graphics.DynamicSpriteFontExtensionMethods.DrawString(
+				Main.spriteBatch,
+				FontAssets.MouseText.Value,
+				i.Text,
+				( i.Position -= new Vector2( Main.rand.NextFloat( -0.1f, 0.1f ) ) )  - Vector2.One * 2f,
+				Color.Black,
+				i.Rotation *= ( Main.rand.NextBool() ? 1.005f : 0.995f ) + 0.005f / i.Text.Length,
+				i.Origin,
+				1f,
+				SpriteEffects.None,
+				0f
+			);
+
+			ReLogic.Graphics.DynamicSpriteFontExtensionMethods.DrawString(
+				Main.spriteBatch,
+				FontAssets.MouseText.Value,
+				i.Text,
+				i.Position,
+				i.Color,
+				i.Rotation,
+				i.Origin,
+				1f,
+				SpriteEffects.None,
+				0f
+			);
+
+			if ( --i.Time <= 0 )
+				Texts.Remove( i );
+		}
+	}
 }
 
 internal abstract class UI {
@@ -80,9 +151,9 @@ internal abstract class UI {
 	protected float ScreenWidth => Main.maxScreenW / Main.UIScale - Width;
 	protected float ScreenHeight => Main.maxScreenH / Main.UIScale - Height;
 
-	protected static bool LClick => Main.mouseLeftRelease && Main.mouseLeft;
-	protected static bool RClick => Main.mouseRightRelease && Main.mouseRight;
-	protected static bool MClick => Main.mouseMiddleRelease && Main.mouseMiddle;
+	internal static bool LClick => Terraria.GameInput.PlayerInput.Triggers.JustPressed.MouseLeft;
+	internal static bool RClick => Terraria.GameInput.PlayerInput.Triggers.JustPressed.MouseRight;
+	internal static bool MClick => Terraria.GameInput.PlayerInput.Triggers.JustPressed.MouseMiddle;
 
 	internal virtual double Slow => 3;
 	protected virtual int Frames => 1;
@@ -116,31 +187,35 @@ internal abstract class UI {
 			num2 += Main.trashSlotOffset.Y;
 		}
 
-		return new Rectangle( num, num2, ( int )( Terraria.GameContent.TextureAssets.InventoryBack.Width() * Main.inventoryScale ), ( int )( Terraria.GameContent.TextureAssets.InventoryBack.Height() * Main.inventoryScale ) );
+		return new Rectangle( num, num2, ( int )( TextureAssets.InventoryBack.Width() * Main.inventoryScale ), ( int )( TextureAssets.InventoryBack.Height() * Main.inventoryScale ) );
 	} }
 }
 
 internal class ItemSlot {
 	private readonly string slot;
 	internal static readonly List< string > Items = [];
-	public ItemSlot( string name ) => Items.Add( slot = name );
+	private readonly Color Color;
+	public ItemSlot( string name, Color color = default ) {
+		Items.Add( slot = name );
+		Color = color;
+	}
 
 	private const int Size = 45;
 	private const float scale = 1f;
-	internal int Left, Top;
+	internal float Left, Top;
 
 	internal Func< bool > Check;
 
-	private Rectangle Dim => new( Left, Top, Size, Size );
+	private Rectangle Dim => new( ( int )Left, ( int )Top, ( int )( Size * scale ), ( int )( Size * scale ) );
 	private bool Within => Dim.Contains( UI.Mouse.ToPoint() );
 	
 	internal void Update() {
-		if ( Within && Main.mouseLeft && Main.mouseLeftRelease )
+		if ( Within && UI.LClick )
 			Grab();
 	}
 
     internal void Draw() {
-		Utils.DrawInvBG( Main.spriteBatch, Dim );
+		Utils.DrawInvBG( Main.spriteBatch, Dim, Color );
 		
 		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
 			return;
@@ -156,7 +231,7 @@ internal class ItemSlot {
 			Main.HoverItem = Item.Clone();
 		}
 
-		if ( !Terraria.GameContent.TextureAssets.Item[ Item.type ].IsLoaded )
+		if ( !TextureAssets.Item[ Item.type ].IsLoaded )
 			Main.instance.LoadItem( Item.type );
 
 		Terraria.UI.ItemSlot.DrawItemIcon(
@@ -174,11 +249,11 @@ internal class ItemSlot {
 
 		string Content = Item.stack.ToString();
 
-		Vector2 Measure = Terraria.GameContent.FontAssets.ItemStack.Value.MeasureString( Content );
+		Vector2 Measure = FontAssets.ItemStack.Value.MeasureString( Content );
 
 		Utils.DrawBorderStringFourWay(
 			Main.spriteBatch,
-			Terraria.GameContent.FontAssets.ItemStack.Value,
+			FontAssets.ItemStack.Value,
 			Content,
 			Left + Size / 2 - Measure.X / 1.5f / 2,
 			Top + Size / 2 + 2,

@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using Terraria;
 
 namespace Renascent.content.code;
@@ -7,40 +8,52 @@ internal class Equip : UI {
 
     private const int size = 45;
     private const int space = 5;
-    
-    private int upgrade;
 
-    internal override float Width => size + upgrade / 2 * size + space * 2;
-    internal override float Height => size * 2 + space * 2;
-    protected override float Left => ScreenWidth / 2 + Width / 2;
-    protected override float Top => ScreenHeight / 2 + Height / 2;
+    private float w;
+    internal override float Width => w;
+    internal override float Height => space * 2.0f + size * 4.0f;
+    protected override float Left => ScreenWidth / 2.0f + Width / 2.0f;
+    protected override float Top => ScreenHeight / 2.0f + Height / 2.0f;
 
     internal override bool Drag => true;
 
-    private readonly ItemSlot[] Slots = new ItemSlot[ Mimic.Upgrades ];
+    private readonly ItemSlot[] Common = new ItemSlot[ Mimic.Upgrades * 2 ];
+    private readonly ItemSlot[] Unique = new ItemSlot[ Mimic.Upgrades / 2 ];
 
     protected override void Initialize() {
-        for ( int i = 0; i < Mimic.Upgrades; i++ )
-            Slots[ i ] = new( "regularequip" + i ) { Check = () => Main.mouseItem.ModItem is Bauble };
+        for ( int i = 0; i < Common.Length; i++ )
+            Common[ i ] = new( "Common" + i ) { Check = () => Main.mouseItem.ModItem is Bauble };
+        for ( int i = 0; i < Unique.Length; i++ )
+            Unique[ i ] = new( "Unique" + i, Color.BlanchedAlmond ) { Check = () => Main.mouseItem.ModItem is Bauble };
     }
 
     internal override void Update() {
-		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
-			return;
-		
-		upgrade = tp.MimicUpgrade;
-    
-        for ( int i = 0; i <= upgrade; i++ )
-            Slots[ i ].Update();
+        foreach ( ItemSlot i in Common )
+            i.Update();
+        foreach ( ItemSlot i in Unique )
+            i.Update();
     }
 
     internal override void Draw() {
-		Utils.DrawInvBG( SB, Dim );
+		Utils.DrawInvBG( SB, Dim, Color.DarkRed * 0.8f );
 
-        for ( int i = 0; i <= upgrade; i++ ) {
-            Slots[ i ].Left = Dim.Left + space + i / 2 * size;
-            Slots[ i ].Top = Dim.Top + space + i % 2 * size;
-            Slots[ i ].Draw();
+		if ( !Main.LocalPlayer.TryGetModPlayer( out TrashPlayer tp ) )
+			return;
+
+        w = space * 2f;
+
+        for ( int i = 0; i < tp.MimicUpgrade * 2; i++ ) {
+            Common[ i ].Left = Dim.Left + space + i / 2 * size;
+            Common[ i ].Top = Dim.Top + space + i % 2 * size;
+            Common[ i ].Draw();
+        }
+            
+        w = ( tp.MimicUpgrade * 2 - 1 ) / 2 * size + size + space * 2.0f;
+
+        for ( int i = 0; i < tp.MimicUpgrade / 2; i++ ) {
+            Unique[ i ].Left = Dim.Left + space + i * size;
+            Unique[ i ].Top = Dim.Bottom - space - size;
+            Unique[ i ].Draw();
         }
     }
 }

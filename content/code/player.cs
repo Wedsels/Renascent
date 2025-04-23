@@ -1,5 +1,4 @@
 using MonoMod.Cil;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Terraria;
@@ -16,15 +15,15 @@ internal class TrashPlayer  : ModPlayer {
 
     public override void Load() {
         IL_Main.OnCharacterNamed += context => new ILCursor( context ).EmitDelegate( () => { 
-				Mimic.Speak( "I could've come up with better." );
+				Mimic.Speak( "NewName" );
 		} );
 
         IL_Main.OnWorldNamed += context => new ILCursor( context ).EmitDelegate( () => { 
-				Mimic.Speak( "I could've come up with better." );
+				Mimic.Speak( "NewName" );
 		} );
 		
         IL_WorldGen.CreateNewWorld += context => new ILCursor( context ).EmitDelegate( () => { 
-				Mimic.Speak( "This is gonna take a while." );
+				Mimic.Speak( "Loading" );
 		} );
 		
 		Terraria.UI.ItemSlot.OnItemTransferred += info => {
@@ -45,7 +44,7 @@ internal class TrashPlayer  : ModPlayer {
     }
 
     public override bool OnPickup( Item item ) {
-		Mimic.Speak( "Looks Tasty..." );
+		Mimic.Speak( "Pickup" );
 
         return true;
     }

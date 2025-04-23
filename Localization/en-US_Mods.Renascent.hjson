@@ -4,3 +4,86 @@ Items: {
 		Tooltip: ""
 	}
 }
+
+Mimic: {
+	Name: Murmur, the Mimic
+	#
+	Fall0: I do not get fed enough for this...
+	Fall1: Now I'm hungry again.
+	Fall2: Di..zz.zy
+	Fall3: I feel sick
+	Fall4: Ouch..
+	Fall5: Sto..o..o..p..
+	Fall6: Plea..se
+	Fall7: No... more..
+	Fall8: I've had worse
+	Fall9: Weakling.
+	Fall10: Shook loose something
+	Fall11: No! Where is it?!
+	Fall12: I.. need to... get out.. of here..
+	Fall13: I threw up and don't even know where it is
+	Fall14: Lost my lunch
+	Fall15: You owe me some food
+	Fall16: I expect reparations
+	#
+	Eat0: YUM
+	Eat1: I've tasted better.
+	Eat2: Boring.
+	Eat3: MINE
+	Eat4: ..Thanks
+	#
+	Greeting0: Didn't leave me with much food..
+	Greeting1: Morning
+	Greeting2: Hey
+	Greeting3: Hello
+	Greeting4: Where were you
+	Greeting5: Welcome back
+	Greeting6: Could've come back sooner..
+	Greeting7: It was so quiet just moments ago
+	Greeting8: And I was having the most wonderful dream.
+	Greeting9: I'm hungry
+	Greeting10: Feed me
+	Greeting11: I threw up a little over there
+	#
+	Parting0: You Leaving?
+	Parting1: Where are you going?
+	Parting2: Bring some snacks when you come back.
+	Parting3: At least say goodbye
+	Parting4: Bye
+	Parting5: See you later
+	Parting6: Goodnight
+	Parting7: At least feed me a little before you go
+	#
+	NewName0: I could've come up with better
+	NewName1: Aren't you embarrassed?
+	NewName2: Kind of cool..
+	NewName3: Why couldn't you have named me?
+	NewName4: I'm glad you weren't the one naming me, could've been much worse.
+	#
+	Loading0: This is gonna take a while
+	Loading1: Got a snack?
+	Loading2: Might just take a nap.
+	Loading3: You're not going to be throwin' me around the whole time, right?
+	#
+	Death0: Lame.
+	Death1: You could've survived that
+	Death2: That one's on you.
+	Death3: Shouldn't have messed with that thing
+	Death4: This was the obvious result.
+	Death5: That was unfair
+	Death6: You almost had it
+	Death7: So close..
+	Death8: How's it going?
+	Death9: You gonna give up?
+	#
+	Pickup0: Looks tasty
+	Pickup1: That's for me, right?
+	Pickup2: Can I have that one?
+	Pickup3: Yuck
+	Pickup4: I've had those before
+	Pickup5: You gonna eat that?
+	Pickup6: Haven't tried that before
+	Pickup7: That's new
+	Pickup8: Did it drop enough to share?
+	Pickup9: You do owe me...
+}

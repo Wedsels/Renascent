@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.GameInput;
 using Terraria.ID;
 
 namespace Renascent.content.code;
@@ -25,8 +26,6 @@ internal class MimicUI : UI {
 
 		if ( !Main.LocalPlayer.trashItem.IsAir )
 			Mimic.Digest();
-	    
-		Mimic.Speaks.Clear();
 	}
 
     internal override bool Drag => true;
@@ -41,36 +40,36 @@ internal class MimicUI : UI {
 	internal override double Slow => Frame < Frames / 2.0 ? 2.0 : Frame >= Frames - 1 ? 18.0 : 10.0;
 
 	internal override void Update() {
-		if ( Main.timeForVisualEffects % 6000 == 0 )
+		if ( Main.timeForVisualEffects % 600 == 0 )
 			movetype = Main.rand.Next( 3 );
 	
 		if ( !greeting ) {
 			DragMouse.X += Main.rand.NextFloat( ScreenWidth );
-			Mimic.Speak( "Didn't leave me with much food.." );
+			Mimic.Speak( "Greeting" );
 		}
 		greeting = true;
 
 		if ( !farewell && Main.ingameOptionsWindow )
-			Mimic.Speak( "..Leaving?" );
+			Mimic.Speak( "Parting" );
 		farewell = Main.ingameOptionsWindow;
 
 		if ( !death && Main.LocalPlayer.dead )
-			Mimic.Speak( "Well done.." );
+			Mimic.Speak( "Death" );
 		death = Main.LocalPlayer.dead;
+		
+		dragged |= dragging;
 
 		bool lift = DragMouse.Y < 0;
-			
-		if ( dragging && lift ) {
-			movetype = Main.rand.Next();
-			dragged = true;
-		}
 		
 		if ( Frame == Frames / 2.0 + 1.0 )
+			canhop = movetype < 2;
+			
+		if ( dragging && lift && movetype == 2 ) {
+			movetype = Main.rand.Next( 2 );
 			canhop = true;
-		
-		canhop &= !dragging && !Within && movetype < 2;
+		}
 
-		if ( !dragged && Show && ( canhop || hop ) && Frame >= Frames - 3 ) {
+		if ( movetype < 2 && !dragged && Show && ( canhop || hop ) && Frame >= Frames - 3 ) {
 			canhop = false;
 			hop = true;
 
@@ -81,8 +80,9 @@ internal class MimicUI : UI {
 				momentum.X -= movetype == 0 ? 1.1f : -1.1f;
 		} else hop = false;
 		
-		if ( Main.playerInventory && !dragging && !lift && Within || ( Condition &= Main.playerInventory && !lift && !dragging ) ) {
-			Terraria.ModLoader.UI.UICommon.TooltipMouseText( "Murmer the Mimic" );
+		if ( Main.playerInventory && !dragged && Within || ( Condition &= Main.playerInventory && !dragged ) ) {
+			if ( Within)
+				UICommon.Text( Terraria.Localization.Language.GetTextValue( "Mods.Renascent.Mimic.Name" ), new Rectangle( ( int )Mouse.X, ( int )Mouse.Y, 0, 0 ), 1, Color.Yellow );
 			
 			momentum.X = 0f;
 
@@ -160,14 +160,7 @@ internal class MimicUI : UI {
 			if ( momentum.Y > 200f ) {
 				movetype = Main.rand.Next( 3 );
 				if ( Main.rand.NextBool( Math.Max( 1, 240 - ( int )momentum.Y ) ) )
-					Mimic.Speak( Main.rand.Next( 6 ) switch {
-						0 => "I do not get fed enough for this...",
-						1 => "Now I'm hungry again.",
-						2 => "Di..zz.zy",
-						3 => "I feel sick",
-						4 => "Ouch..",
-						_ => "Sto..o..o..p..",
-					} );
+					Mimic.Speak( "Fall" );
 				Terraria.Audio.SoundEngine.PlaySound( SoundID.Item171 );
 				for ( int i = 0; i < 50; i++ )
 					Dust.NewDust(
@@ -179,10 +172,10 @@ internal class MimicUI : UI {
 			} else
 				Terraria.Audio.SoundEngine.PlaySound( SoundID.Tink );
 
-			canhop = true;
+			canhop = movetype < 2;
 		}
 
-		if ( Dim.Top >= ScreenHeight ) {
+		if ( DragMouse.Y == 0 ) {
 			momentum.Y = 0f;
 			dragged = false;
 		}
@@ -198,6 +191,9 @@ internal class MimicUI : UI {
 			Terraria.Audio.SoundEngine.PlaySound( SoundID.ChesterClose );
 			Condition = open = false;
 		}
+		
+		if ( movetype == 2 && ( Dim.Left <= 0f || Dim.Right >= ScreenWidth ) )
+			movetype = Main.rand.Next( 2 );
 	}
 
 	internal override void Draw() {
@@ -217,10 +213,8 @@ internal class MimicUI : UI {
 		);
 
 		if ( dragging ) {
-			Vector2 Zoom = Dim.Center() / Main.GameZoomTarget + Main.Camera.ScaledPosition;
+			Vector2 Zoom = Vector2.Transform( Dim.Center() + Main.screenPosition, Main.GameViewMatrix.ZoomMatrix ) / Main.UIScale;
 			Lighting.AddLight( Zoom, new Vector3( Renascent.LastUpgrade * 5f / ( float )( Math.Pow( Math.Max( 500.0f, Zoom.Distance( Main.LocalPlayer.Center ) ), 2.0 ) / 20000.0 ) ) );
 		}
-
-		Mimic.DrawSpeak();
     }
 }
