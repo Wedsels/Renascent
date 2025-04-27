@@ -2,7 +2,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
-using Terraria.GameInput;
 using Terraria.ID;
 
 namespace Renascent.content.code;
@@ -21,7 +20,7 @@ internal class MimicUI : UI {
 
     internal override void Hide() {
 		if ( Condition )
-			Terraria.Audio.SoundEngine.PlaySound( SoundID.ChesterClose );
+			Mimic.Sound( SoundID.ChesterClose );
 		Condition = false;
 
 		if ( !Main.LocalPlayer.trashItem.IsAir )
@@ -82,17 +81,17 @@ internal class MimicUI : UI {
 		
 		if ( Main.playerInventory && !dragged && Within || ( Condition &= Main.playerInventory && !dragged ) ) {
 			if ( Within)
-				UICommon.Text( Terraria.Localization.Language.GetTextValue( "Mods.Renascent.Mimic.Name" ), new Rectangle( ( int )Mouse.X, ( int )Mouse.Y, 0, 0 ), 1, Color.Yellow );
+				UICommon.Text( Terraria.Localization.Language.GetTextValue( "Mods.Renascent.Mimic.Name" ), new Rectangle( ( int )Mouse.X, ( int )Mouse.Y, 0, 0 ), 0, Color.Yellow );
 			
 			momentum.X = 0f;
 
 			if ( LClick && Within )
 				if ( Condition = !Condition ) {
-					Terraria.Audio.SoundEngine.PlaySound( SoundID.ChesterOpen );
+					Mimic.Sound( SoundID.ChesterOpen );
 					close = false;
 					open = true;
 				} else {
-					Terraria.Audio.SoundEngine.PlaySound( SoundID.ChesterClose );
+					Mimic.Sound( SoundID.ChesterClose );
 					open = false;
 					close = true;
 				}
@@ -142,7 +141,7 @@ internal class MimicUI : UI {
 		if ( DragMouse.Y < 0 && dragging && !Main.mouseRight ) {
 			momentum = ( Mouse - lastmomentum );
 			if ( DragMouse.Y < ScreenHeight * -0.75f || Math.Abs( momentum.X ) > 120 || Math.Abs( momentum.Y ) > 120 )
-				Terraria.Audio.SoundEngine.PlaySound( Main.rand.Next( 3 ) switch { 0 => SoundID.Zombie126, 1 => SoundID.Zombie127, _ => SoundID.Zombie128 } );
+				Mimic.Sound( Main.rand.Next( 3 ) switch { 0 => SoundID.Zombie126, 1 => SoundID.Zombie127, _ => SoundID.Zombie128 } );
 		}
 		lastmomentum = Mouse;
 		
@@ -161,7 +160,7 @@ internal class MimicUI : UI {
 				movetype = Main.rand.Next( 3 );
 				if ( Main.rand.NextBool( Math.Max( 1, 240 - ( int )momentum.Y ) ) )
 					Mimic.Speak( "Fall" );
-				Terraria.Audio.SoundEngine.PlaySound( SoundID.Item171 );
+				Mimic.Sound( SoundID.Item171 );
 				for ( int i = 0; i < 50; i++ )
 					Dust.NewDust(
 						Dim.TopLeft() + Main.screenPosition,
@@ -170,7 +169,7 @@ internal class MimicUI : UI {
 						i % 4 == 0 ? DustID.Blood : DustID.WoodFurniture
 					);
 			} else
-				Terraria.Audio.SoundEngine.PlaySound( SoundID.Tink );
+				Mimic.Sound( SoundID.Tink );
 
 			canhop = movetype < 2;
 		}
@@ -188,7 +187,7 @@ internal class MimicUI : UI {
 			direction = ( SpriteEffects )( Main.LocalPlayer.direction > 0 ? 1 : 0 );
 			
 		if ( Condition && momentum != Vector2.Zero ) {
-			Terraria.Audio.SoundEngine.PlaySound( SoundID.ChesterClose );
+			Mimic.Sound( SoundID.ChesterClose );
 			Condition = open = false;
 		}
 		

@@ -22,9 +22,9 @@ internal class Equip : UI {
 
     protected override void Initialize() {
         for ( int i = 0; i < Common.Length; i++ )
-            Common[ i ] = new( "Common" + i ) { Check = () => Main.mouseItem.ModItem is Bauble };
+            Common[ i ] = new( "Common" + i ) { Check = () => Main.mouseItem.ModItem is Bauble b };
         for ( int i = 0; i < Unique.Length; i++ )
-            Unique[ i ] = new( "Unique" + i, Color.BlanchedAlmond ) { Check = () => Main.mouseItem.ModItem is Bauble };
+            Unique[ i ] = new( "Unique" + i, Color.BlanchedAlmond ) { Check = () => Main.mouseItem.ModItem is Bauble b };
     }
 
     internal override void Update() {

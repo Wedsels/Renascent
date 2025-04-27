@@ -59,7 +59,7 @@ internal class TrashPlayer  : ModPlayer {
     public override void SaveData( TagCompound tag ) {
 	    foreach ( var i in Items.Keys )
 			tag[ i ] = Items[ i ];
-			
+
 		tag[ "mimicupgrade" ] = MimicUpgrade;
     }
 }

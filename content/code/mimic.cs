@@ -1,10 +1,6 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Terraria;
-using Terraria.GameContent;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.Localization;
 
@@ -34,6 +30,14 @@ internal static class Mimic {
 	internal static void Speak( string key ) {
 		UICommon.Text( Language.SelectRandom( ( x, _ ) => x.Contains( "Mimic." + key ) ).Value, UI.Dim );
 
-		Terraria.Audio.SoundEngine.PlaySound( SoundID.Zombie30 );
+		Sound( SoundID.Zombie30 );
+	}
+	
+	internal static void Sound( SoundStyle style ) {
+		if ( Main.gameInactive ) return;
+
+		style.PitchVariance = 0.5f;
+		style.SoundLimitBehavior = SoundLimitBehavior.IgnoreNew;
+		SoundEngine.PlaySound( style );
 	}
 }

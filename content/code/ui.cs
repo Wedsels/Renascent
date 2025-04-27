@@ -91,7 +91,8 @@ internal class UICommon : ModSystem {
 			
 		if ( Texts.TryGetValue( new ( text, Vector2.Zero, color, time ), out var data ) ) {
 			data.Time = time;
-			data.Position = position;
+			if ( position.Distance( data.Position ) > 30f )
+				data.Position = position;
 		} else
 			Texts.Add( new( text, position, color == default ? Color.DarkRed : color, time ) );
 	}
@@ -192,6 +193,38 @@ internal abstract class UI {
 }
 
 internal class ItemSlot {
+	internal static readonly float InventorySlotSize = TextureAssets.InventoryBack.Width() * Main.inventoryScale;
+	internal static void DrawItem( Item item, float left, float top ) {
+		Terraria.UI.ItemSlot.DrawItemIcon(
+			item,
+			Terraria.UI.ItemSlot.Context.InventoryItem,
+			Main.spriteBatch,
+			new Vector2( left + InventorySlotSize / 2f, top + InventorySlotSize / 2f ),
+			scale,
+			InventorySlotSize * 0.65f,
+			Color.White
+		);
+
+		if ( item.stack <= 1 )
+			return;
+
+		string Content = item.stack.ToString();
+
+		Vector2 Measure = FontAssets.ItemStack.Value.MeasureString( Content );
+
+		Utils.DrawBorderStringFourWay(
+			Main.spriteBatch,
+			FontAssets.ItemStack.Value,
+			Content,
+			left + InventorySlotSize / 2f - Measure.X / 1.5f / 2f,
+			top + InventorySlotSize / 2f + 2f,
+			Color.White,
+			Color.Black,
+			Vector2.Zero,
+			scale / 1.5f
+		);
+	}
+
 	private readonly string slot;
 	internal static readonly List< string > Items = [];
 	private readonly Color Color;
@@ -200,13 +233,12 @@ internal class ItemSlot {
 		Color = color;
 	}
 
-	private const int Size = 45;
 	private const float scale = 1f;
 	internal float Left, Top;
 
 	internal Func< bool > Check;
 
-	private Rectangle Dim => new( ( int )Left, ( int )Top, ( int )( Size * scale ), ( int )( Size * scale ) );
+	private Rectangle Dim => new( ( int )Left, ( int )Top, ( int )( InventorySlotSize * scale ), ( int )( InventorySlotSize * scale ) );
 	private bool Within => Dim.Contains( UI.Mouse.ToPoint() );
 	
 	internal void Update() {
@@ -229,39 +261,14 @@ internal class ItemSlot {
 			Main.LocalPlayer.mouseInterface = true;
 			Main.hoverItemName = Item.Name;
 			Main.HoverItem = Item.Clone();
+			Item[] single = [ Main.HoverItem ];
+			Terraria.UI.ItemSlot.MouseHover( single, 0 );
 		}
 
 		if ( !TextureAssets.Item[ Item.type ].IsLoaded )
 			Main.instance.LoadItem( Item.type );
 
-		Terraria.UI.ItemSlot.DrawItemIcon(
-			Item,
-			Terraria.UI.ItemSlot.Context.InventoryItem,
-			Main.spriteBatch,
-			new Vector2( Left + Size / 2, Top + Size / 2 ),
-			scale,
-			Size * 0.65f,
-			Color.White
-		);
-
-		if ( Item.stack <= 1 )
-			return;
-
-		string Content = Item.stack.ToString();
-
-		Vector2 Measure = FontAssets.ItemStack.Value.MeasureString( Content );
-
-		Utils.DrawBorderStringFourWay(
-			Main.spriteBatch,
-			FontAssets.ItemStack.Value,
-			Content,
-			Left + Size / 2 - Measure.X / 1.5f / 2,
-			Top + Size / 2 + 2,
-			Color.White,
-			Color.Black,
-			Vector2.Zero,
-			scale / 1.5f
-		);
+		DrawItem( Item, Left, Top );
     }
 
     private void Grab() {
