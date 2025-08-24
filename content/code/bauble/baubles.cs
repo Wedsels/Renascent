@@ -260,7 +260,7 @@ internal class ChestersBloodVessel : Bauble {
 	protected override int Rarity => 4;
 
 	private float Stat => 0.06f * Roll;
-	private float Steal => Player.statLife / Player.statLifeMax2 * Stat;
+	private float Steal => ( 1.0f - Player.statLife / ( float )Player.statLifeMax2 ) * Stat;
 
 	protected override object[] TooltipArgs => [ DisplayValue( Stat * 100.0f ), DisplayValue( Steal * 100.0f ) ];
 
@@ -274,7 +274,7 @@ internal class IllogicalManaTubes : Bauble {
 	protected override int Rarity => 4;
 
 	private float Stat => 0.04f * Roll;
-	private float Steal => Player.statMana / Player.statManaMax2 * Stat;
+	private float Steal => ( 1.0f - Player.statMana / ( float )Player.statManaMax2 ) * Stat;
 
 	protected override object[] TooltipArgs => [ DisplayValue( Stat * 100.0f ), DisplayValue( Steal * 100.0f ) ];
 
