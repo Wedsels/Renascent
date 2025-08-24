@@ -1,11 +1,4 @@
-Items: {
-	Bauble: {
-		DisplayName: Bauble
-		Tooltip: ""
-	}
-}
-
-Mimic: {
+Murmur: {
 	Name: Murmur, the Mimic
 	#
 	Fall0: I do not get fed enough for this...
@@ -54,16 +47,16 @@ Mimic: {
 	Parting6: Goodnight
 	Parting7: At least feed me a little before you go
 	#
-	NewName0: I could've come up with better
+	NewName0: Even I could think up with better
 	NewName1: Aren't you embarrassed?
 	NewName2: Kind of cool..
 	NewName3: Why couldn't you have named me?
-	NewName4: I'm glad you weren't the one naming me, could've been much worse.
+	NewName4: Glad you weren't the one naming me, I could've had it even worse.
 	#
 	Loading0: This is gonna take a while
 	Loading1: Got a snack?
 	Loading2: Might just take a nap.
-	Loading3: You're not going to be throwin' me around the whole time, right?
+	Loading3: You're not goin' to be throwin' me 'round the whole time, right?
 	#
 	Death0: Lame.
 	Death1: You could've survived that
@@ -86,4 +79,254 @@ Mimic: {
 	Pickup7: That's new
 	Pickup8: Did it drop enough to share?
 	Pickup9: You do owe me...
+	#
+	Tired0: Tired...
+	Tired1: Sleepy...
+	Tired2: Just going to rest my eyes
+	Tired3: Shhh..
+	Tired4: Zzzz.zzz..zz
+}
+
+Items: {
+	HasteEnchantedAmulet: {
+		DisplayName: Haste Enchanted Amulet
+		Tooltip:
+			'''
+			{0}% of Maximum Mana gained as Attack Speed
+			Attack Speed: {1}%
+			'''
+	}
+
+	TrackingSpuds: {
+		DisplayName: Tracking Spuds
+		Tooltip:
+			'''
+			{0}% of Maximum Mana gained as Critical Hit Chance
+			Critical Hit Chance: {1}%
+			'''
+	}
+
+	EldritchSphere: {
+		DisplayName: Eldritch Sphere
+		Tooltip:
+			'''
+			Exchange Life and Mana
+			Life: {0}
+			Mana: {1}
+			'''
+	}
+
+	ManicMagicManifold: {
+		DisplayName: Manic Magic Manifold
+		Tooltip:
+			'''
+			{0}% Damage per point of missing Mana
+			Damage: {1}%
+			'''
+	}
+
+	ManaRose: {
+		DisplayName: Mana Rose
+		Tooltip:
+			'''
+			{0}% Critical Hit Chance per point of missing Mana
+			Critical Hit Chance: {1}%
+			'''
+	}
+
+	HardyBloodvine: {
+		DisplayName: Hardy Bloodvine
+		Tooltip:
+			'''
+			{0}% Defense per point of missing Life
+			Defense: {1}%
+			'''
+	}
+
+	WeaponWeights: {
+		DisplayName: Weapon Weights
+		Tooltip: Trade {0}% Attack Speed and Projectile Velocity for {1}% Damage
+	}
+
+	ImmortalLadyBug: {
+		DisplayName: Immortal Lady Bug
+		Tooltip:
+			'''
+			Survive death once every {0} seconds, and recover {1}% of your Maximum Life
+			Cooldown: {2}
+			'''
+	}
+
+	ConfusingHourglass: {
+		DisplayName: Confusing Hourglass
+		Tooltip:
+			'''
+			Gain {0}% Defense and Damage for {1} seconds after death
+			Time Left: {2}
+			'''
+	}
+
+	PracticalGuideBook: {
+		DisplayName: Practical Guide Book
+		Tooltip: "{0} seconds to Bauble cooldowns and durations when you kill an enemy"
+	}
+
+	BloodsoakedFang: {
+		DisplayName: Bloodsoaked Fang
+		Tooltip:
+			'''
+			Gain {0}% Critical Hit Chance of the weapon's Critical Hit Chance for {1} seconds after killing an enemy
+			Time Left: {2}
+			Critical Hit Chance: {3}
+			'''
+	}
+
+	ChestersBloodVessel: {
+		DisplayName: Chester's Blood Vessel
+		Tooltip:
+			'''
+			Disable Life regeneration, but gain {0}% of missing Life as LifeSteal
+			LifeSteal: {1}%
+			'''
+	}
+
+	IllogicalManaTubes: {
+		DisplayName: Illogical Mana Tubes
+		Tooltip:
+			'''
+			Disable Mana regeneration, but gain {0}% of missing Mana as ManaSteal
+			ManaSteal: {1}%
+			'''
+	}
+
+	MasterBelt: {
+		DisplayName: Master Belt
+		Tooltip:
+			'''
+			Gain {0}% Dodge Chance every second, lost on a successful dodge
+			Dodge Chance: {1}%
+			'''
+	}
+
+	MirrorShield: {
+		DisplayName: Mirror Shield
+		Tooltip:
+			'''
+			Convert {0}% of Defense to Dodge Chance
+			Gain {1}% Dodge Chance per point of Defense
+			Defense: {2}
+			Dodge Chance: {3}%
+			'''
+	}
+
+	InefficientMitosis: {
+		DisplayName: Inefficient Mitosis
+		Tooltip: Convert {0}% of Damage to {1}% Multishot
+	}
+
+	EagleEye: {
+		DisplayName: Eagle Eye
+		Tooltip:
+			'''
+			{0}% Critical Hit Chance for every tile away from the nearest enemy
+			Critical Hit Chance: {1}%
+			'''
+	}
+
+	ShellOfPrey: {
+		DisplayName: Shell Of Prey
+		Tooltip:
+			'''
+			{0} Defense for each enemy within {1} tiles
+			Defense: {2}
+			'''
+	}
+
+	TomeOfFrenzy: {
+		DisplayName: Tome Of Frenzy
+		Tooltip:
+			'''
+			{0}% Damage per point of Mana spent in the last second, but shift Mana Costs by {1}%
+			Damage: {2}%
+			Mana Per Second: {3}
+			'''
+	}
+
+	BloodiedChambering: {
+		DisplayName: Bloodied Chambering
+		Tooltip:
+			'''
+			{0}% Multishot per succesfuly landed projectile for {1} seconds
+			Hits: {2}
+			Multishot: {3}%
+			Time Left: {4}
+			'''
+	}
+
+	TinyCloningMachine: {
+		DisplayName: Tiny Cloning Machine
+		Tooltip: Consume {0}% of the Weapon's Damage as Mana instead of Ammunition
+	}
+
+	OverclockedOvercharger: {
+		DisplayName: Overclocked Overcharger
+		Tooltip: Lose {0} Maximum Life in exchange for one Powered Bauble Slot
+	}
+
+	ManaVacuum: {
+		DisplayName: Mana Vacuum
+		Tooltip:
+			'''
+			When under 20 Mana recover {0}% of your Maximum Mana once every {1} seconds
+			Time Left: {2} seconds
+			'''
+	}
+
+	FluffyToughyTeddyBear: {
+		DisplayName: Fluffy Toughy Teddy Bear
+		Tooltip:
+			'''
+			Increase Defense by {0}% based on the highest Critical Hit Tier, for {1} seconds
+			Defense: {2}% seconds
+			Time Left: {3} seconds
+			'''
+	}
+
+	TestBauble: {
+		DisplayName: Test Bauble
+		Tooltip: Gain {0} Bauble Slots
+	}
+}
+
+Configs: {
+	Client: {
+		DisplayName: Client
+
+		LastMimicUpgrade: {
+			Label: Last Mimic Upgrade
+			Tooltip: Memory of the last played mimic, for visual appearance in menus
+		}
+
+		DigestionColumns: {
+			Label: Digestion Columns
+			Tooltip: The number of columns which will be displayed
+		}
+
+		DigestionRows: {
+			Label: Digestion Rows
+			Tooltip: The number of Rows which will be displayed
+		}
+
+		ToleranceColumns: {
+			Label: Tolerance Columns
+			Tooltip: The number of columns which will be displayed
+		}
+
+		ToleranceRows: {
+			Label: Tolerance Rows
+			Tooltip: The number of Rows which will be displayed
+		}
+	}
+
+	Server.DisplayName: Server
 }
