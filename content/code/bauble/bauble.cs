@@ -83,6 +83,9 @@ internal abstract class Bauble : ModItem {
 		Utils.DrawBorderString( Main.spriteBatch, text, new( x + width / 2.0f - mes.X / 2.0f, y + space - mes.Y / 2.0f + 4 ), lines[ 0 ].Color );
     }
 
+	internal enum DropSources { Any, Plant, Enemy, Boss, Player };
+	internal virtual DropSources DropSource => DropSources.Any;
+
 	protected virtual int Rarity => 1;
 
 	internal int Stacks;
@@ -92,8 +95,7 @@ internal abstract class Bauble : ModItem {
 
 	protected int Negative = Main.rand.NextBool() ? 1 : -1;
 	private float _roll = ( float )Math.Pow( Main.rand.NextDouble(), 5.0 ) * 0.0946f;
-	protected float Roll => 1.0f + Power;
-	// protected float Roll => _roll + Power;
+	protected float Roll => _roll + Power;
 
 	internal void Reset() {
 		Power = 0.0f;
