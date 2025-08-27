@@ -52,7 +52,7 @@ internal class MimicPlayer : ModPlayer {
 
     public override void PostUpdate() {
 		for ( int i = 0; i < BaubleMaxSlots; i++ )
-			if ( i >= UnlockedSlotCount && !Baubles[ i ].Item.IsAir ) {
+			if ( i >= UnlockedSlotCount && Baubles[ i ] != null && !Baubles[ i ].Item.IsAir ) {
 				Item.NewItem( new EntitySource_OverfullInventory( Main.LocalPlayer ), Main.LocalPlayer.position, Vector2.Zero, Baubles[ i ].Item );
 				Baubles[ i ].Item.SetDefaults();
 			}

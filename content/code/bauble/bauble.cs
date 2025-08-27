@@ -4,7 +4,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.GameContent;
 using Terraria.ModLoader.IO;
 using Terraria.DataStructures;
 using Humanizer;
@@ -19,12 +21,16 @@ namespace Renascent.content.code.bauble;
 // AFTER LEVEL ~5? MIMIC APPEARANCE AND PASSIVES ARE TIED TO THE UNIQUES SLOTTED, ONE FOR BODY, ONE FOR LEGS, ONE FOR HEAD
 
 internal abstract class Bauble : ModItem {
+	internal static HashSet< Bauble > Instances = [];
+
 	internal static readonly Dictionary< int, List< int > > Baubles = [];
     public override void SetStaticDefaults() {
 		int r = Math.Abs( Rarity );
 		if ( !Baubles.ContainsKey( r ) )
 			Baubles[ r ] = [];
 		Baubles[ r ].Add( Type );
+
+		Instances.Add( this );
     }
 
 	internal static Player Player => Main.LocalPlayer;
@@ -58,7 +64,7 @@ internal abstract class Bauble : ModItem {
 		float width = 0;
 
 		foreach ( var i in lines ) {
-			float w = Terraria.GameContent.FontAssets.MouseText.Value.MeasureString( i.Text ).X;
+			float w = FontAssets.MouseText.Value.MeasureString( i.Text ).X;
 			if ( w > width )
 				width = w;
 
@@ -68,8 +74,11 @@ internal abstract class Bauble : ModItem {
 			}
 		}
 
-		string text = ( int )( 100 * Roll ) + " / " + ( int )( 100 * ( 1.0f + Power ) );
-		Vector2 mes = Terraria.GameContent.FontAssets.MouseText.Value.MeasureString( text );
+		if ( x == 0 && y == 0 )
+			return;
+
+		string text = ( int )( 100.0f * Roll ) + " / " + ( int )( 100.0f * ( 1.0f + Power ) );
+		Vector2 mes = FontAssets.MouseText.Value.MeasureString( text );
 
 		const int space = 14;
 
@@ -79,14 +88,16 @@ internal abstract class Bauble : ModItem {
 
 		Utils.DrawInvBG( Main.spriteBatch, new( x, y, ( int )width, space * 2 ), Color.Black );
 		Utils.DrawInvBG( Main.spriteBatch, new( x, y, ( int )( width * _roll ), space * 2 ), Color.Red * UI.Oscillate * 0.25f );
-
+ 
 		Utils.DrawBorderString( Main.spriteBatch, text, new( x + width / 2.0f - mes.X / 2.0f, y + space - mes.Y / 2.0f + 4 ), lines[ 0 ].Color );
     }
 
-	internal enum DropSources { Any, Plant, Enemy, Boss, Player };
-	internal virtual DropSources DropSource => DropSources.Any;
-
-	protected virtual int Rarity => 1;
+	protected virtual int CreateNPC => -1;
+	protected virtual int CreateTile => -1;
+	internal virtual int Rarity => ItemRarityID.Blue;
+	internal virtual Func< Player, FishingAttempt, bool > FishingBiome => ( Player p, FishingAttempt a ) => false;
+	internal virtual int[] NPC => [];
+	internal virtual double SpawnChance => 0.01;
 
 	internal int Stacks;
 	internal double Timer;
@@ -157,4 +168,20 @@ internal abstract class Bauble : ModItem {
 		Negative = reader.ReadInt32();
 		_roll = reader.ReadSingle();
 	}
+
+	public override void SetDefaults() {
+		if ( CreateTile > -1 || CreateNPC > -1 ) {
+			Item.width = 18;
+			Item.height = 18;
+			Item.useTime = 10;
+			Item.useTurn = true;
+			Item.useStyle = ItemUseStyleID.Swing;
+			Item.autoReuse = true;
+			Item.consumable = true;
+			Item.useAnimation = 15;
+
+			Item.makeNPC = CreateNPC;
+			Item.createTile = CreateTile;
+		}
+    }
 }

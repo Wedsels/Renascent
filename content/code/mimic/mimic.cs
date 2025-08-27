@@ -49,7 +49,7 @@ internal static class Mimic {
 		double xp = 0.0f;
 
 		foreach ( var i in MP.Trash )
-			xp += ( 1.0 + i.value ) * ( 1.0 + Math.Abs( i.rare ) ) * i.stack * ( 0.5 + Main.rand.NextDouble() * 2.0 );
+			xp += 1.0 + ( 1.0 + i.value ) * ( 1.0 + Math.Abs( i.rare ) ) * i.stack * ( 0.5 + Main.rand.NextDouble() * 2.0 );
 		MP.Trash.Clear();
 
 		Microsoft.Xna.Framework.Rectangle dest;
@@ -87,12 +87,11 @@ internal static class Mimic {
 		for ( int i = 0; i < rgore; i++ ) {
 			int a = Terraria.Gore.NewGore(
 				null,
-				position + Main.screenPosition,
+				position * Main.UIScale + Main.screenPosition,
 				new( Main.rand.NextFloat( -6.2f, 6.2f ), Main.rand.NextFloat( -6.2f, 0.0f ) ),
 				type(),
 				Main.rand.NextFloat()
 			);
-
 
 			Main.gore[ a ].sticky = false;
 			Main.gore[ a ].light = float.Epsilon;

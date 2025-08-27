@@ -52,20 +52,8 @@ internal class HardyBloodvine : Bauble {
 	internal override void Update( ref Boost boost ) => boost.Defense *= 1.0f + Bonus;
 }
 
-internal class ManaRose : Bauble {
-	protected override int Rarity => 2;
-
-	private float Crit => 0.004f * Roll * Negative;
-
-	private float Bonus => Crit * Math.Max( 0, Player.statManaMax2 - Player.statMana );
-
-	protected override object[] TooltipArgs => [ DisplayValue( Crit * 100.0f ), DisplayValue( Bonus * 100.0f ) ];
-
-	internal override void Update( ref Boost boost ) => boost.Crit += ( int )( Bonus * 100.0f );
-}
-
 internal class WeaponWeights : Bauble {
-	protected override int Rarity => 2;
+	internal override int Rarity => 2;
 
 	private float Speed => 0.85f * Roll * -Negative;
 	private float Damage => 0.25f * Roll * Negative;
@@ -81,7 +69,7 @@ internal class WeaponWeights : Bauble {
 }
 
 internal class ConfusingHourglass : Bauble {
-	protected override int Rarity => 2;
+	internal override int Rarity => 2;
 
 	private float Stat => 0.3f * Roll * Negative;
 
@@ -104,7 +92,7 @@ internal class ConfusingHourglass : Bauble {
 }
 
 internal class InefficientMitosis : Bauble {
-	protected override int Rarity => 2;
+	internal override int Rarity => 2;
 
 	private float Damage => 0.75f * Roll;
 	private float Multishot => 1.185f * Roll;
@@ -118,7 +106,7 @@ internal class InefficientMitosis : Bauble {
 }
 
 internal class MasterBelt : Bauble {
-	protected override int Rarity => 2;
+	internal override int Rarity => 2;
 
 	private float Dodge => 0.02f * Roll;
 
@@ -137,7 +125,7 @@ internal class MasterBelt : Bauble {
 }
 
 internal class ManaVacuum : Bauble {
-	protected override int Rarity => 3;
+	internal override int Rarity => 3;
 
 	private float Mana => 0.7f * Roll;
 	private double Cooldown => 40.0 - 30.0 * Roll;
@@ -153,7 +141,7 @@ internal class ManaVacuum : Bauble {
 }
 
 internal class MirrorShield : Bauble {
-	protected override int Rarity => 3;
+	internal override int Rarity => 3;
 
 	private float Dodge => 0.006f * Roll;
 	private int Def => ( int )( Player.statDefense * Roll );
@@ -167,7 +155,7 @@ internal class MirrorShield : Bauble {
 }
 
 internal class BloodsoakedFang : Bauble {
-	protected override int Rarity => 3;
+	internal override int Rarity => 3;
 
 	private float Crit => 0.015f * Roll;
 	private double Time => 10 * Roll;
@@ -187,7 +175,7 @@ internal class BloodsoakedFang : Bauble {
 }
 
 internal class TomeOfFrenzy : Bauble {
-	protected override int Rarity => 4;
+	internal override int Rarity => 4;
 
 	private readonly int[] Usage = new int[ 60 ];
 	private int Index = 0;
@@ -213,7 +201,7 @@ internal class TomeOfFrenzy : Bauble {
 }
 
 internal class FluffyToughyTeddyBear : Bauble {
-	protected override int Rarity => 4;
+	internal override int Rarity => 4;
 
 	private float Defense => 0.18f * Roll * Negative;
 	private double BuffTime => 12.0 * Roll;
@@ -234,7 +222,7 @@ internal class FluffyToughyTeddyBear : Bauble {
 }
 
 internal class ShellOfPrey : Bauble {
-	protected override int Rarity => 4;
+	internal override int Rarity => 4;
 
 	private float Defense => 2.0f * Roll;
 	private float Range => 15.0f - 10.0f * Roll;
@@ -245,19 +233,8 @@ internal class ShellOfPrey : Bauble {
 	internal override void Update( ref Boost boost ) => boost.Defense += ( int )( Defense * Nearby );
 }
 
-internal class EagleEye : Bauble {
-	protected override int Rarity => 4;
-
-	private float Crit => Roll * Negative;
-	private static float Near => NearbyEnemy( 250.0f ).Select( e => e.Center.Distance( Player.Center ) ).DefaultIfEmpty( 0.0f ).Min() / 16.0f;
-
-	protected override object[] TooltipArgs => [ DisplayValue( Crit ), ( int )( Crit * Near ) ];
-
-	internal override void Update( ref Boost boost ) => boost.Crit += ( int )( Crit * Near );
-}
-
 internal class ChestersBloodVessel : Bauble {
-	protected override int Rarity => 4;
+	internal override int Rarity => 4;
 
 	private float Stat => 0.06f * Roll;
 	private float Steal => ( 1.0f - Player.statLife / ( float )Player.statLifeMax2 ) * Stat;
@@ -271,7 +248,7 @@ internal class ChestersBloodVessel : Bauble {
 }
 
 internal class IllogicalManaTubes : Bauble {
-	protected override int Rarity => 4;
+	internal override int Rarity => 4;
 
 	private float Stat => 0.04f * Roll;
 	private float Steal => ( 1.0f - Player.statMana / ( float )Player.statManaMax2 ) * Stat;
@@ -284,31 +261,8 @@ internal class IllogicalManaTubes : Bauble {
 	}
 }
 
-internal class BloodiedChambering : Bauble {
-	protected override int Rarity => 5;
-
-	private double BuffTime => 2.0 * Roll;
-	private float Multishot => 0.015f * Roll * Negative;
-
-	protected override object[] TooltipArgs => [ DisplayValue( Multishot * 100.0f ), Round( BuffTime ), Stacks, DisplayValue( Multishot * Stacks * 100.0f ), Round( Timer ) ];
-
-    internal override void Hit( Projectile proj, NPC.HitInfo hitinfo, NPC npc, bool minion ) {
-		Stacks++;
-		Timer = BuffTime;
-	}
-
-    internal override void Update( ref Boost boost ) {
-        if ( Timer == 0.0 )
-			Stacks = 0;
-		else
-			boost.Multishot += Multishot * Stacks;
-    }
-
-    internal override void OnReset() => Stacks = 0;
-}
-
 internal class TinyCloningMachine : Bauble {
-	protected override int Rarity => ItemRarityID.Quest;
+	internal override int Rarity => ItemRarityID.Quest;
 
 	private float Mana => 2.85f - 2.25f * Roll;
 
@@ -332,7 +286,7 @@ internal class TinyCloningMachine : Bauble {
 }
 
 internal class OverclockedOvercharger : Bauble {
-	protected override int Rarity => ItemRarityID.Expert;
+	internal override int Rarity => ItemRarityID.Expert;
 
 	private int Health => ( int )( 60.0f - 40.0f * Roll );
 
@@ -344,26 +298,8 @@ internal class OverclockedOvercharger : Bauble {
     }
 }
 
-internal class ImmortalLadyBug : Bauble {
-	protected override int Rarity => ItemRarityID.Expert;
-
-	private double Cooldowntime => 480.0 - 240.0 * Roll;
-	private float Life => 0.5f * Roll;
-
-	protected override object[] TooltipArgs => [ Round( Cooldowntime ), Round( Life * 100.0f ), Round( Timer ) ];
-
-	internal override bool PreKill( double damage, int hitDirection, bool pvp, ref bool playSound, ref bool genDust, ref PlayerDeathReason damageSource ) {
-		if ( Timer <= 0.0 ) {
-			Timer = Cooldowntime;
-			Player.statLife += ( int )( Player.statLifeMax2 * Life );
-		}
-
-		return Timer < Cooldowntime - 1;
-	}
-}
-
 internal class PracticalGuideBook : Bauble {
-	protected override int Rarity => ItemRarityID.Master;
+	internal override int Rarity => ItemRarityID.Master;
 
 	private double Cooldowntime => 8.0 * Roll * -Negative;
 
@@ -378,7 +314,7 @@ internal class PracticalGuideBook : Bauble {
 }
 
 internal class TestBauble : Bauble {
-	protected override int Rarity => ItemRarityID.Expert;
+	internal override int Rarity => ItemRarityID.Expert;
 
 	private int Slots => ( int )( 6.0f * Roll * Negative );
 

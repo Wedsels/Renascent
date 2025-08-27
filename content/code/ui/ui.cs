@@ -1,13 +1,13 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using Terraria;
+using Terraria.ID;
+using Terraria.ModLoader;
+using Terraria.GameContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.Cil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Terraria;
-using Terraria.GameContent;
-using Terraria.ID;
-using Terraria.ModLoader;
 
 using Renascent.content.code.bauble;
 
@@ -36,6 +36,9 @@ internal readonly struct Colors {
 
 internal class UICommon : ModSystem {
 	public override void PostSetupContent() {
+		foreach ( var i in UI.UIs.Values )
+			i.Initialize();
+
         IL_Main.DoUpdate += context => {
 			var cursor = new ILCursor( context );
 
@@ -143,6 +146,9 @@ internal class UICommon : ModSystem {
 						i.EarlyDraw();
 					else
 						i.Hide();
+
+				Main.spriteBatch.End();
+				Main.spriteBatch.Begin( SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform );
 			} );
 		
 			int index = -1;
@@ -270,7 +276,6 @@ internal abstract class UI : ModType {
 	protected sealed override void Register() {
 		// ModTypeLookup< UI >.Register( this );
         UIs[ GetType() ] = this;
-        Initialize();
 	}
 
     internal static readonly Dictionary< Type, UI > UIs = [];
@@ -279,7 +284,7 @@ internal abstract class UI : ModType {
 
 	internal static bool ShiftHover;
 
-	protected virtual void Initialize() {}
+	internal virtual void Initialize() {}
 	internal virtual void Update() {}
 	internal virtual void Draw() {}
 	internal virtual void EarlyDraw() {}

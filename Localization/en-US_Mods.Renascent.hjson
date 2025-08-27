@@ -292,6 +292,15 @@ Items: {
 			'''
 	}
 
+	FrogEyes: {
+		DisplayName: Frog Eyes
+		Tooltip:
+			'''
+			{0}% Multishot for every tile away from the nearest enemy
+			Multishot: {1}%
+			'''
+	}
+
 	TestBauble: {
 		DisplayName: Test Bauble
 		Tooltip: Gain {0} Bauble Slots

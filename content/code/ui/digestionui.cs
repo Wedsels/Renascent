@@ -50,12 +50,14 @@ internal class DigestionUI : UI {
         Active = false;
     }
 
+    private string search = "";
+
     private int offset;
 
-    private readonly int[] items = ContentSamples.ItemsByType.Where( x => !x.Value.IsAir ).Select( x => x.Key ).ToArray();
-    private int[] display = ContentSamples.ItemsByType.Where( x => !x.Value.IsAir ).Select( x => x.Key ).ToArray();
+    private int[] items = [];
+    private int[] display = [];
 
-    private string search = "";
+    internal override void Initialize() => display = items = ContentSamples.ItemsByType.Where( x => !x.Value.IsAir ).Select( x => x.Key ).ToArray();
 
     internal override void Update() {
         Main.LocalPlayer.mouseInterface |= Within;
