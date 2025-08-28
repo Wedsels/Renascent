@@ -31,6 +31,8 @@ internal abstract class Bauble : ModItem {
 		Baubles[ r ].Add( Type );
 
 		Instances.Add( this );
+
+		ItemID.Sets.IsLavaImmuneRegardlessOfRarity[ Type ] = true;
     }
 
 	internal static Player Player => Main.LocalPlayer;
