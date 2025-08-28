@@ -17,11 +17,8 @@ namespace Renascent.content.code.bauble;
 internal abstract class BaublePlant : ModTile {
     internal static HashSet< BaublePlant > Plants = [];
 
-	internal static Tile Tile( int i, int j ) => Framing.GetTileSafely( i, j );
-    internal static bool Breakable( Tile tile ) => !tile.HasTile || Main.tileCut[ tile.TileType ] || TileID.Sets.BreakableWhenPlacing[ tile.TileType ] || tile.TileType == TileID.WaterDrip || tile.TileType == TileID.LavaDrip || tile.TileType == TileID.HoneyDrip || tile.TileType == TileID.SandDrip;
-
 	private bool Grown( int i, int j ) {
-		Tile tile = Tile( i, j );
+		Tile tile = Framing.GetTileSafely( i, j );
 		return Size.X - Width <= tile.TileFrameX;
 	}
 
@@ -46,24 +43,13 @@ internal abstract class BaublePlant : ModTile {
     internal virtual bool AnchorBottom => true;
 
 	internal virtual double SpawnChance => 0.01;
-
-	public override bool CanPlace( int i, int j ) {
-		if ( !Breakable( Tile( i, j ) ) )
-			return false;
-
-        WorldGen.KillTile( i, j );
-        if ( Main.netMode == NetmodeID.MultiplayerClient )
-            NetMessage.SendData( MessageID.TileManipulation, -1, -1, null, 0, i, j );
-
-		return true;
-	}
     
 	public override bool CanDrop( int i, int j ) => Grown( i, j );
 	public override bool IsTileSpelunkable( int i, int j ) => Grown( i, j );
 
 	public override void RandomUpdate( int i, int j ) {
 		if ( !Grown( i, j ) ) {
-			Tile( i, j ).TileFrameX += Width;
+			Framing.GetTileSafely( i, j ).TileFrameX += Width;
 
 			if ( Main.netMode != NetmodeID.SinglePlayer )
 				NetMessage.SendTileSquare( -1, i, j, 1 );
@@ -82,7 +68,7 @@ internal abstract class BaublePlant : ModTile {
     ];
 
     public override bool PreDraw( int i, int j, SpriteBatch spriteBatch ) {
-        Tile tile = Tile( i, j );
+        Tile tile = Framing.GetTileSafely( i, j );
 
         if ( TileObjectData.IsTopLeft( tile ) )
             Main.instance.TilesRenderer.AddSpecialPoint( i, j, ( Terraria.GameContent.Drawing.TileDrawing.TileCounterType )( AnchorBottom ? 4 : 5 ) );
@@ -130,21 +116,29 @@ internal abstract class BaublePlant : ModTile {
 
 internal class BaublePlantTile : GlobalTile {
     public override void RandomUpdate( int i, int j, int type ) {
-        Console.WriteLine("tilerandom : " + type + " - " + i + ":" + j);
-
-        if ( !BaublePlant.Tile( i, j ).HasUnactuatedTile )
+        if ( !Framing.GetTileSafely( i, j ).HasUnactuatedTile )
             return;
 
+        double roll = Main.rand.NextDouble();
+
         foreach ( var p in BaublePlant.Plants ) {
+            if ( roll >= p.SpawnChance )
+                continue;
+
             Point target = new( i, j + ( p.AnchorBottom ? 1 : -1 ) );
 
-            if ( p.CanPlace( target.X, target.Y ) && WorldGen.genRand.NextDouble() < p.SpawnChance ) {
-                Tile tile = Framing.GetTileSafely( target );
-                tile.TileType = p.Type;
-                tile.HasTile = true;
-                WorldGen.SquareTileFrame( target.X, target.Y );
+            if ( Framing.GetTileSafely( target ).TileType == p.Type )
+                continue;
+
+            WorldGen.PlaceTile( target.X, target.Y, p.Type, true );
+
+            if ( Framing.GetTileSafely( target ).TileType == p.Type ) {
                 if ( Main.netMode == NetmodeID.Server )
                     NetMessage.SendTileSquare( -1, target.X, target.Y );
+
+                Console.WriteLine( p.Name + " - " + target );
+
+                break;
             }
         }
     }

@@ -63,14 +63,13 @@ internal abstract class BaubleCritter : ModNPC {
     }
 
     public override void DrawEffects( ref Color drawColor ) {
-        if ( !Main.rand.NextBool( 1000 ) )
-            return;
-
-        Dust dust = Terraria.Dust.NewDustDirect( NPC.position, NPC.width, NPC.height, Dust, Main.rand.NextFloat( -2.0f, -2.0f ), Main.rand.NextFloat( -2.0f, -2.0f ) );
-        if ( Main.rand.NextBool( 2 ) ) {
-            dust.noGravity = true;
-            dust.scale = 1.2f * NPC.scale;
-        } else dust.scale = 0.7f * NPC.scale;
+        if ( Main.rand.NextBool( 150 ) ) {
+            Dust dust = Terraria.Dust.NewDustDirect( NPC.position, NPC.width, NPC.height, Dust, Main.rand.NextFloat( -2.0f, -2.0f ), Main.rand.NextFloat( -2.0f, -2.0f ) );
+            if ( Main.rand.NextBool( 2 ) ) {
+                dust.noGravity = true;
+                dust.scale = 1.2f * NPC.scale;
+            } else dust.scale = 0.7f * NPC.scale;
+        }
     }
 
     public override bool? CanBeCaughtBy( Item item, Player player ) {

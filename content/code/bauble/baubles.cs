@@ -53,7 +53,7 @@ internal class HardyBloodvine : Bauble {
 }
 
 internal class WeaponWeights : Bauble {
-	internal override int Rarity => 2;
+	internal override int Rarity => ItemRarityID.Green;
 
 	private float Speed => 0.85f * Roll * -Negative;
 	private float Damage => 0.25f * Roll * Negative;
@@ -69,7 +69,7 @@ internal class WeaponWeights : Bauble {
 }
 
 internal class ConfusingHourglass : Bauble {
-	internal override int Rarity => 2;
+	internal override int Rarity => ItemRarityID.Green;
 
 	private float Stat => 0.3f * Roll * Negative;
 
@@ -92,7 +92,7 @@ internal class ConfusingHourglass : Bauble {
 }
 
 internal class InefficientMitosis : Bauble {
-	internal override int Rarity => 2;
+	internal override int Rarity => ItemRarityID.Green;
 
 	private float Damage => 0.75f * Roll;
 	private float Multishot => 1.185f * Roll;
@@ -106,7 +106,7 @@ internal class InefficientMitosis : Bauble {
 }
 
 internal class MasterBelt : Bauble {
-	internal override int Rarity => 2;
+	internal override int Rarity => ItemRarityID.Green;
 
 	private float Dodge => 0.02f * Roll;
 
@@ -125,7 +125,7 @@ internal class MasterBelt : Bauble {
 }
 
 internal class ManaVacuum : Bauble {
-	internal override int Rarity => 3;
+	internal override int Rarity => ItemRarityID.Orange;
 
 	private float Mana => 0.7f * Roll;
 	private double Cooldown => 40.0 - 30.0 * Roll;
@@ -141,7 +141,7 @@ internal class ManaVacuum : Bauble {
 }
 
 internal class MirrorShield : Bauble {
-	internal override int Rarity => 3;
+	internal override int Rarity => ItemRarityID.Orange;
 
 	private float Dodge => 0.006f * Roll;
 	private int Def => ( int )( Player.statDefense * Roll );
@@ -155,7 +155,7 @@ internal class MirrorShield : Bauble {
 }
 
 internal class BloodsoakedFang : Bauble {
-	internal override int Rarity => 3;
+	internal override int Rarity => ItemRarityID.Orange;
 
 	private float Crit => 0.015f * Roll;
 	private double Time => 10 * Roll;
@@ -175,7 +175,7 @@ internal class BloodsoakedFang : Bauble {
 }
 
 internal class TomeOfFrenzy : Bauble {
-	internal override int Rarity => 4;
+	internal override int Rarity => ItemRarityID.LightRed;
 
 	private readonly int[] Usage = new int[ 60 ];
 	private int Index = 0;
@@ -201,12 +201,12 @@ internal class TomeOfFrenzy : Bauble {
 }
 
 internal class FluffyToughyTeddyBear : Bauble {
-	internal override int Rarity => 4;
+	internal override int Rarity => ItemRarityID.LightRed;
 
 	private float Defense => 0.18f * Roll * Negative;
 	private double BuffTime => 12.0 * Roll;
 
-	protected override object[] TooltipArgs => [ DisplayValue( Defense ), DisplayValue( Defense * Stacks * 100.0f ), Round( BuffTime ) ];
+	protected override object[] TooltipArgs => [ DisplayValue( Defense ), Round( BuffTime ), DisplayValue( Defense * Stacks * 100.0f ), Round( Timer ) ];
 
 	internal override void Update( ref Boost boost ) {
 		if ( Timer <= 0.0 )
@@ -222,7 +222,7 @@ internal class FluffyToughyTeddyBear : Bauble {
 }
 
 internal class ShellOfPrey : Bauble {
-	internal override int Rarity => 4;
+	internal override int Rarity => ItemRarityID.LightRed;
 
 	private float Defense => 2.0f * Roll;
 	private float Range => 15.0f - 10.0f * Roll;
@@ -234,7 +234,7 @@ internal class ShellOfPrey : Bauble {
 }
 
 internal class ChestersBloodVessel : Bauble {
-	internal override int Rarity => 4;
+	internal override int Rarity => ItemRarityID.LightRed;
 
 	private float Stat => 0.06f * Roll;
 	private float Steal => ( 1.0f - Player.statLife / ( float )Player.statLifeMax2 ) * Stat;
@@ -248,7 +248,7 @@ internal class ChestersBloodVessel : Bauble {
 }
 
 internal class IllogicalManaTubes : Bauble {
-	internal override int Rarity => 4;
+	internal override int Rarity => ItemRarityID.LightRed;
 
 	private float Stat => 0.04f * Roll;
 	private float Steal => ( 1.0f - Player.statMana / ( float )Player.statManaMax2 ) * Stat;

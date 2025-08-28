@@ -33,7 +33,7 @@ internal class ImmortalLadyBugCritter : BaubleCritter {
     protected override float SpawningChance => 0.001f;
     protected override Nets Net => Nets.Golden;
     protected override SpawnCondition Location => SpawnCondition.Underground;
-    protected override SpawnConditionBestiaryInfoElement Biome => Terraria.GameContent.Bestiary.BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.UndergroundHallow;
+    protected override SpawnConditionBestiaryInfoElement Biome => BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.UndergroundHallow;
 
     public override void ModifyIncomingHit( ref NPC.HitModifiers modifiers ) {
         modifiers.HideCombatText();

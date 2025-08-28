@@ -8,7 +8,7 @@ namespace Renascent.content.code.bauble.manarose;
 
 internal class ManaRose : Bauble {
     protected override int CreateTile => ModContent.TileType< ManaRosePlant >();
-	internal override int Rarity => 2;
+	internal override int Rarity => ItemRarityID.Green;
 
 	private float Crit => 0.004f * Roll * Negative;
 

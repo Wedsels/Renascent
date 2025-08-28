@@ -14,7 +14,7 @@ internal static class Mimic {
 	// if ( evolution < Evolution.Hardmode ) scale *= 0.5
 	internal enum Evolution { Wood, Gold, Ice, Demonic, Size }
 
-	private static readonly int Upgrades = ( int )( MimicUI.MimicLarge.Size().X / UI.UIs[ typeof( MimicUI ) ].Width );
+	// private static readonly int Upgrades = ( int )( MimicUI.MimicLarge.Size().X / UI.UIs[ typeof( MimicUI ) ].Width );
 
 	internal static UI UI => UI.UIs[ typeof( MimicUI ) ];
 
